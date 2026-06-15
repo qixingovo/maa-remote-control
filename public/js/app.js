@@ -33,7 +33,7 @@ const APP = {
 
   async doLogout() {
     await api.logout();
-    this.showLogin();
+    this.showLogin(true);
   },
 
   switchTab(tab, updateHash = true) {
@@ -74,12 +74,8 @@ const APP = {
         this.updateUI();
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-shell').style.display = '';
-      } else {
-        this.account = null;
-        this.updateUI();
-        document.getElementById('login-page').style.display = 'flex';
-        document.getElementById('app-shell').style.display = 'none';
       }
+      // If not authenticated, login page already visible by default, don't clear it
     } catch { /* */ }
   },
 
@@ -98,11 +94,14 @@ const APP = {
     }
   },
 
-  showLogin() {
+  showLogin(clearFields = false) {
     document.getElementById('login-page').style.display = 'flex';
     document.getElementById('app-shell').style.display = 'none';
     this.account = null;
-    document.getElementById('login-password').value = '';
+    if (clearFields) {
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    }
   },
 
   closeModal() {
