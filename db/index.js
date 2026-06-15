@@ -11,4 +11,10 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.exec(schema);
 
+// Migration: add account_id column if devices table exists but lacks it
+const devCols = db.prepare("PRAGMA table_info(devices)").all().map(c => c.name);
+if (devCols.length > 0 && !devCols.includes('account_id')) {
+  db.exec("ALTER TABLE devices ADD COLUMN account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL");
+}
+
 module.exports = db;
