@@ -21,8 +21,8 @@ function processReport({ user, device, taskUuid, status, payload }) {
 
   // Insert result
   db.prepare(
-    `INSERT INTO task_results (task_uuid, status, payload_type, payload_path, payload_text)
-     VALUES (?, ?, ?, ?, ?)`
+    `INSERT INTO task_results (task_uuid, status, payload_type, payload_path, payload_text, created_at)
+     VALUES (?, ?, ?, ?, ?, datetime('now'))`
   ).run(taskUuid, resultStatus, payloadType, payloadPath, payloadText);
 
   // Update task status

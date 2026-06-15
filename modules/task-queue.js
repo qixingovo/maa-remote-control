@@ -7,16 +7,16 @@ function enqueue(deviceUuid, type, params = '', priority = 0) {
   deviceRegistry.findOrCreate('pending', deviceUuid);
   const taskUuid = uuidv4();
   db.prepare(
-    `INSERT INTO tasks (task_uuid, device_uuid, type, params, priority, status)
-     VALUES (?, ?, ?, ?, ?, 'pending')`
+    `INSERT INTO tasks (task_uuid, device_uuid, type, params, priority, status, created_at)
+     VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))`
   ).run(taskUuid, deviceUuid, type, params, priority);
   return db.prepare('SELECT * FROM tasks WHERE task_uuid = ?').get(taskUuid);
 }
 
 function enqueueBatch(tasksArray) {
   const insert = db.prepare(
-    `INSERT INTO tasks (task_uuid, device_uuid, type, params, priority, status)
-     VALUES (?, ?, ?, ?, ?, 'pending')`
+    `INSERT INTO tasks (task_uuid, device_uuid, type, params, priority, status, created_at)
+     VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))`
   );
   const created = [];
   const txn = db.transaction((items) => {

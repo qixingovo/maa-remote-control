@@ -14,7 +14,7 @@ function findOrCreate(userUuid, deviceUuid) {
     }
     return existing;
   }
-  db.prepare('INSERT INTO devices (device_uuid, user_uuid, account_id) VALUES (?, ?, ?)')
+  db.prepare("INSERT INTO devices (device_uuid, user_uuid, account_id, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))")
     .run(deviceUuid, userUuid, accountId);
   return db.prepare('SELECT * FROM devices WHERE device_uuid = ?').get(deviceUuid);
 }
