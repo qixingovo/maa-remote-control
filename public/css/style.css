@@ -297,7 +297,7 @@ button.sm { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius:
 .filter-bar select { flex: 1; min-width: 0; }
 
 /* Form Elements */
-select, input, button {
+select, input:not([type="checkbox"]):not([type="radio"]), button {
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -308,6 +308,10 @@ select, input, button {
   -webkit-appearance: none;
   appearance: none;
   min-height: 48px;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -465,15 +469,6 @@ table { display: none; }
   margin-bottom: 12px;
   text-align: center;
   font-size: 16px;
-}
-.login-card input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  min-height: 18px;
-  padding: 0;
-  margin: 0;
-  accent-color: var(--accent);
-  cursor: pointer;
 }
 .login-card button {
   width: 100%;
