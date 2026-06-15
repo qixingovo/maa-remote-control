@@ -33,9 +33,6 @@ const APP = {
 
   async doLogout() {
     await api.logout();
-    this.account = null;
-    this.updateUI();
-    this.switchTab('dashboard');
     this.showLogin();
   },
 
@@ -75,11 +72,13 @@ const APP = {
       if (r.authenticated) {
         this.account = r;
         this.updateUI();
-        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('app-shell').style.display = '';
       } else {
         this.account = null;
         this.updateUI();
-        this.showLogin();
+        document.getElementById('login-page').style.display = 'flex';
+        document.getElementById('app-shell').style.display = 'none';
       }
     } catch { /* */ }
   },
@@ -100,7 +99,10 @@ const APP = {
   },
 
   showLogin() {
-    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('login-page').style.display = 'flex';
+    document.getElementById('app-shell').style.display = 'none';
+    this.account = null;
+    document.getElementById('login-password').value = '';
   },
 
   closeModal() {
@@ -189,7 +191,8 @@ document.getElementById('login-submit').addEventListener('click', async () => {
 
   const r = await api.login(username, password);
   if (r.authenticated) {
-    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('app-shell').style.display = '';
     APP.checkAuth();
   } else {
     errEl.textContent = r.error || '登录失败';
