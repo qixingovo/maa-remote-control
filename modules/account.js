@@ -10,7 +10,7 @@ function createAccount(username, password, role = 'user') {
   const passwordHash = bcrypt.hashSync(password, 10);
 
   db.prepare(
-    'INSERT INTO accounts (username, password_hash, maa_user_id, role) VALUES (?, ?, ?, ?)'
+    "INSERT INTO accounts (username, password_hash, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
   ).run(username, passwordHash, maaUserId, role);
 
   return db.prepare('SELECT id, username, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
