@@ -6,4 +6,5 @@ module.exports = {
   dbPath: path.resolve(__dirname, '..', process.env.DB_PATH || './maa-remote.db'),
   screenshotDir: path.resolve(__dirname, '..', process.env.SCREENSHOT_DIR || './data/screenshots'),
   adminPassword: process.env.ADMIN_PASSWORD || '',
+  sessionSecret: process.env.SESSION_SECRET || '',
 };

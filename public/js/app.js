@@ -188,7 +188,8 @@ document.getElementById('login-submit').addEventListener('click', async () => {
     return;
   }
 
-  const r = await api.login(username, password);
+  const remember = document.getElementById('login-remember').checked;
+  const r = await api.login(username, password, remember);
   if (r.authenticated) {
     document.getElementById('login-page').style.display = 'none';
     document.getElementById('app-shell').style.display = '';

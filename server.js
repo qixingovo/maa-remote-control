@@ -5,12 +5,13 @@ const config = require('./config');
 
 const app = express();
 
-// Session for optional web UI auth
+// Session for web UI auth (persistent across server restarts)
+const sessionSecret = config.sessionSecret || require('crypto').randomBytes(32).toString('hex');
 app.use(session({
-  secret: require('crypto').randomBytes(32).toString('hex'),
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 }
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }  // 30 days
 }));
 
 // MAA protocol routes (no auth, large body for screenshots)

@@ -24,7 +24,12 @@ router.post('/register', (req, res) => {
 
 // Login
 router.post('/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, remember } = req.body;
+
+  // If "remember me" checked, extend session to 30 days
+  if (remember) {
+    req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+  }
 
   // Try account login first
   if (username) {
