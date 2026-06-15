@@ -35,8 +35,11 @@ const Dashboard = {
 
   renderActivity(results) {
     const tbody = document.querySelector('#recent-activity tbody');
+    const cards = document.getElementById('recent-activity-cards');
     if (results.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">暂无活动</td></tr>';
+      const empty = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">暂无活动</td></tr>';
+      tbody.innerHTML = empty;
+      cards.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:16px">暂无活动</div>';
       return;
     }
     tbody.innerHTML = results.map(r => `
@@ -47,16 +50,27 @@ const Dashboard = {
         <td><span class="badge ${r.status}">${r.status}</span></td>
       </tr>
     `).join('');
+    // Mobile cards
+    cards.innerHTML = results.map(r => `
+      <div class="card-item">
+        <div class="card-row">
+          <span class="type-${APP.typeClass(r.type || '')}">${APP.taskTypeLabel(r.type || '')}</span>
+          <span class="badge ${r.status}">${r.status}</span>
+        </div>
+        <div class="card-meta">${APP.truncate(r.device_uuid || '')} · ${APP.timeAgo(r.created_at)}</div>
+      </div>
+    `).join('');
   },
 
   async quickDispatch() {
     const device = document.getElementById('qd-device').value;
     const type = document.getElementById('qd-type').value;
-    if (!device) return alert('请先选择设备');
+    if (!device) { APP.toast('请先选择设备'); return; }
     try {
       await api.createTask({ device_uuid: device, type });
+      APP.toast('任务已下发');
       this.refresh();
-    } catch (e) { alert('下发失败: ' + e.message); }
+    } catch (e) { APP.toast('下发失败'); }
   }
 };
 

@@ -13,8 +13,11 @@ const Devices = {
 
   renderTable(devices) {
     const tbody = document.querySelector('#devices-table tbody');
+    const cards = document.getElementById('devices-cards');
     if (devices.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-secondary)">暂无设备连接。在 MAA 中配置获取任务端点后自动注册。</td></tr>';
+      const empty = '<tr><td colspan="8" style="text-align:center;color:var(--text-secondary)">暂无设备</td></tr>';
+      tbody.innerHTML = empty;
+      cards.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:16px">暂无设备</div>';
       return;
     }
     tbody.innerHTML = devices.map(d => {
@@ -33,6 +36,25 @@ const Devices = {
             <button class="danger" onclick="Devices.confirmDelete('${d.device_uuid}')">删除</button>
           </td>
         </tr>
+      `;
+    }).join('');
+    // Mobile cards
+    cards.innerHTML = devices.map(d => {
+      const isOnline = d.last_seen_at ? new Date() - new Date(d.last_seen_at + 'Z') < 30000 : false;
+      const escName = (d.name || '').replace(/'/g, "\\'");
+      const escEmu = (d.emulator_type || '').replace(/'/g, "\\'");
+      return `
+        <div class="card-item">
+          <div class="card-row">
+            <span><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span>${d.name || APP.truncate(d.device_uuid)}</span>
+            <span class="badge ${isOnline ? 'completed' : 'cancelled'}">${isOnline ? '在线' : '离线'}</span>
+          </div>
+          <div class="card-meta">${d.emulator_type || '未设置'} · ${APP.timeAgo(d.last_seen_at)}</div>
+          <div class="card-actions">
+            <button class="secondary" onclick="Devices.showEditForm('${d.device_uuid}', '${escName}', '${escEmu}')">编辑</button>
+            <button class="danger" onclick="Devices.confirmDelete('${d.device_uuid}')">删除</button>
+          </div>
+        </div>
       `;
     }).join('');
   },
@@ -84,7 +106,7 @@ const Devices = {
   async saveAdd() {
     const uuid = document.getElementById('add-uuid').value.trim();
     const name = document.getElementById('add-name').value.trim();
-    if (!uuid) return alert('请输入设备 UUID');
+    if (!uuid) { APP.toast('请输入设备 UUID'); return; }
     // Create a task for this device will auto-register it, so just create a dummy heartbeat
     await api.createTask({ device_uuid: uuid, type: 'HeartBeat' });
     if (name) {

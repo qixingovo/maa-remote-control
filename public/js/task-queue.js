@@ -36,16 +36,20 @@ const TaskQueue = {
 
   renderTable(tasks) {
     const tbody = document.querySelector('#tasks-table tbody');
+    const cards = document.getElementById('tasks-cards');
     if (tasks.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">暂无任务</td></tr>';
+      const empty = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">暂无任务</td></tr>';
+      tbody.innerHTML = empty;
+      cards.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:16px">暂无任务</div>';
       return;
     }
+    const statusLabels = { pending:'等待中', dispatched:'已下发', running:'执行中', completed:'已完成', failed:'失败', cancelled:'已取消' };
     tbody.innerHTML = tasks.map(t => `
       <tr>
         <td><code>${APP.truncate(t.task_uuid)}</code></td>
         <td><code>${APP.truncate(t.device_uuid)}</code></td>
         <td><span class="type-badge ${APP.typeClass(t.type)}">${APP.taskTypeLabel(t.type)}</span></td>
-        <td><span class="badge ${t.status}">${t.status === 'dispatched' ? '已下发' : t.status === 'pending' ? '等待中' : t.status === 'completed' ? '已完成' : t.status === 'failed' ? '失败' : t.status}</span></td>
+        <td><span class="badge ${t.status}">${statusLabels[t.status] || t.status}</span></td>
         <td>${APP.timeAgo(t.created_at)}</td>
         <td>
           ${t.status === 'pending' ? `<button class="danger" onclick="TaskQueue.cancel('${t.task_uuid}')">取消</button>` : ''}
@@ -53,17 +57,33 @@ const TaskQueue = {
         </td>
       </tr>
     `).join('');
+    // Mobile cards
+    cards.innerHTML = tasks.map(t => `
+      <div class="card-item">
+        <div class="card-row">
+          <span class="type-${APP.typeClass(t.type)}">${APP.taskTypeLabel(t.type)}</span>
+          <span class="badge ${t.status}">${statusLabels[t.status] || t.status}</span>
+        </div>
+        <div class="card-meta">${APP.truncate(t.device_uuid)} · ${APP.timeAgo(t.created_at)}</div>
+        ${t.status === 'pending' || t.status === 'completed' || t.status === 'failed' ? `
+        <div class="card-actions">
+          ${t.status === 'pending' ? `<button class="danger" onclick="TaskQueue.cancel('${t.task_uuid}')">取消</button>` : ''}
+          ${t.status === 'completed' || t.status === 'failed' ? `<button class="secondary" onclick="TaskQueue.viewResult('${t.task_uuid}')">查看</button>` : ''}
+        </div>` : ''}
+      </div>
+    `).join('');
   },
 
   async enqueue(uuid, type, params) {
     const device = uuid || document.getElementById('task-device').value;
     const taskType = type || document.getElementById('task-type').value;
     const taskParams = params !== undefined ? params : document.getElementById('task-params').value;
-    if (!device) return alert('请选择设备');
+    if (!device) { APP.toast('请选择设备'); return; }
     try {
       await api.createTask({ device_uuid: device, type: taskType, params: taskParams });
+      APP.toast('任务已加入队列');
       this.refresh();
-    } catch (e) { alert('创建失败: ' + e.message); }
+    } catch (e) { APP.toast('创建失败'); }
   },
 
   async cancel(uuid) {
@@ -91,7 +111,7 @@ const TaskQueue = {
       }
       html += '<div class="modal-actions"><button onclick="APP.closeModal()">关闭</button></div>';
       APP.openModal(html);
-    } catch (e) { alert('获取详情失败: ' + e.message); }
+    } catch (e) { APP.toast('获取详情失败'); }
   },
 
   applyFilter() {
@@ -142,14 +162,14 @@ const TaskQueue = {
     const device = document.getElementById('batch-device').value;
     const sel = document.getElementById('batch-types');
     const types = Array.from(sel.selectedOptions).map(o => o.value);
-    if (!device) return alert('请选择设备');
-    if (types.length === 0) return alert('请选择至少一个任务类型');
+    if (!device) { APP.toast('请选择设备'); return; }
+    if (types.length === 0) { APP.toast('请选择至少一个任务类型'); return; }
     const tasks = types.map(type => ({ device_uuid: device, type }));
     try {
       await api.createTaskBatch(tasks);
       APP.closeModal();
       this.refresh();
-    } catch (e) { alert('批量下发失败: ' + e.message); }
+    } catch (e) { APP.toast('批量下发失败'); }
   }
 };
 

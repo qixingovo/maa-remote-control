@@ -58,6 +58,7 @@
         </div>
         <div class="panel">
           <h2>最近活动</h2>
+          <div class="card-list" id="recent-activity-cards"></div>
           <table id="recent-activity">
             <thead><tr><th>时间</th><th>设备</th><th>任务</th><th>状态</th></tr></thead>
             <tbody></tbody>
@@ -72,6 +73,7 @@
             <h2>设备列表</h2>
             <button id="dev-add-btn">手动添加设备</button>
           </div>
+          <div class="card-list" id="devices-cards"><div style="text-align:center;color:var(--text-secondary);padding:20px">暂无设备</div></div>
           <table id="devices-table">
             <thead><tr><th>状态</th><th>名称</th><th>设备 UUID</th><th>用户标识符</th><th>模拟器</th><th>最后在线</th><th>待执行</th><th>操作</th></tr></thead>
             <tbody></tbody>
@@ -134,6 +136,7 @@
               <button id="filter-apply">筛选</button>
             </div>
           </div>
+          <div class="card-list" id="tasks-cards"></div>
           <table id="tasks-table">
             <thead><tr><th>任务 UUID</th><th>设备</th><th>类型</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
             <tbody></tbody>
@@ -156,6 +159,26 @@
       </section>
     </main>
   </div>
+
+  <!-- Bottom navigation (mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      仪表盘
+    </button>
+    <button class="bottom-nav-item" data-tab="devices">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></svg>
+      设备
+    </button>
+    <button class="bottom-nav-item" data-tab="tasks">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"/></svg>
+      任务
+    </button>
+    <button class="bottom-nav-item" data-tab="screenshots">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+      截图
+    </button>
+  </nav>
 
   <!-- Edit device modal -->
   <div class="modal-overlay" id="modal-overlay" style="display:none">

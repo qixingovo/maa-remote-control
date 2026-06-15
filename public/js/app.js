@@ -12,32 +12,35 @@ const APP = {
   },
 
   bindTabs() {
-    document.querySelectorAll('.nav-item').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const tab = link.dataset.tab;
-        this.switchTab(tab);
-      });
-    });
-    // Hash-based routing
+    const handler = (e) => {
+      e.preventDefault();
+      this.switchTab(e.target.dataset.tab || e.currentTarget.dataset.tab);
+    };
+    document.querySelectorAll('.nav-item').forEach(link => link.addEventListener('click', handler));
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.addEventListener('click', handler));
     window.addEventListener('hashchange', () => {
-      const tab = location.hash.replace('#', '') || 'dashboard';
-      this.switchTab(tab, false);
+      this.switchTab((location.hash.replace('#', '') || 'dashboard'), false);
     });
-    const hash = location.hash.replace('#', '') || 'dashboard';
-    this.switchTab(hash, false);
+    this.switchTab((location.hash.replace('#', '') || 'dashboard'), false);
   },
 
   switchTab(tab, updateHash = true) {
     if (updateHash) location.hash = tab;
     this.currentTab = tab;
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === tab));
-    // Refresh tab content
     if (tab === 'dashboard') Dashboard.refresh();
     if (tab === 'devices') Devices.refresh();
     if (tab === 'tasks') TaskQueue.refresh();
     if (tab === 'screenshots') Screenshots.refresh();
+  },
+
+  toast(msg) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.remove(); }, 2000);
   },
 
   async checkAuth() {
