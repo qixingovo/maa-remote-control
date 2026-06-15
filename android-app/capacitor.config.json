@@ -1,0 +1,12 @@
+{
+  "appId": "cn.qixingovo.maa.remote",
+  "appName": "MAA遥控",
+  "webDir": "www",
+  "server": {
+    "url": "https://maa-remote-control.qixingovo.cn",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
