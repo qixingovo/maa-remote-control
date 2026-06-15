@@ -81,7 +81,8 @@ body {
 .bottom-nav-item.active { color: var(--accent); }
 
 /* Content */
-.content { padding: 16px 12px; }
+.content { padding: 12px 12px 16px; }
+@media (min-width: 768px) { .content { padding: 12px 28px 24px; } }
 .tab { display: none; }
 .tab.active { display: block; }
 
