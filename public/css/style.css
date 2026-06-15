@@ -383,6 +383,14 @@ table { display: none; }
 .type-toolbox { color: #9334e6; }
 .type-control { color: #e37400; }
 
+/* Editable name */
+.editable-name {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--text-secondary);
+  transition: color 0.15s;
+}
+.editable-name:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
 /* Online dot */
 .online-dot {
   display: inline-block;

@@ -25,7 +25,7 @@ const Devices = {
       return `
         <tr>
           <td><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span>${isOnline ? '在线' : '离线'}</td>
-          <td>${d.name || '-'}</td>
+          <td><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${(d.name||'').replace(/'/g,"\\'")}')" title="点击改名">${d.name || APP.truncate(d.device_uuid)}</span></td>
           <td><code>${APP.truncate(d.device_uuid)}</code></td>
           <td><code>${APP.truncate(d.user_uuid)}</code></td>
           <td>${d.emulator_type || '-'}</td>
@@ -46,7 +46,7 @@ const Devices = {
       return `
         <div class="card-item">
           <div class="card-row">
-            <span><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span>${d.name || APP.truncate(d.device_uuid)}</span>
+            <span><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${escName}')">${d.name || APP.truncate(d.device_uuid)}</span></span>
             <span class="badge ${isOnline ? 'completed' : 'cancelled'}">${isOnline ? '在线' : '离线'}</span>
           </div>
           <div class="card-meta">${d.emulator_type || '未设置'} · ${APP.timeAgo(d.last_seen_at)}</div>
@@ -57,6 +57,12 @@ const Devices = {
         </div>
       `;
     }).join('');
+  },
+
+  quickRename(uuid, currentName) {
+    const newName = prompt('设备名称:', currentName);
+    if (newName === null) return;
+    api.updateDevice(uuid, { name: newName }).then(() => this.refresh());
   },
 
   showEditForm(uuid, name, emu) {
