@@ -40,9 +40,17 @@ function deleteAccount(id) {
   return db.prepare('SELECT changes() as c').get().c > 0;
 }
 
+function rotateMaaUserId(id) {
+  const acct = db.prepare('SELECT * FROM accounts WHERE id = ?').get(id);
+  if (!acct) return { error: '账户不存在' };
+  const newId = uuidv4().replace(/-/g, '').substring(0, 12);
+  db.prepare('UPDATE accounts SET maa_user_id = ? WHERE id = ?').run(newId, id);
+  return { maa_user_id: newId };
+}
+
 function changePassword(id, newPassword) {
   const hash = bcrypt.hashSync(newPassword, 10);
   db.prepare('UPDATE accounts SET password_hash = ? WHERE id = ?').run(hash, id);
 }
 
-module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, changePassword };
+module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword };

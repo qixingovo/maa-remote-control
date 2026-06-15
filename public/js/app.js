@@ -35,6 +35,15 @@ const APP = {
     if (tab === 'screenshots') Screenshots.refresh();
   },
 
+  async rotateMaaId() {
+    if (!confirm('重新生成 MAA 标识符后，旧标识符将立即失效。MAA 客户端需要更新用户标识符。确认？')) return;
+    try {
+      const r = await api.rotateMaaId();
+      APP.toast('新标识符: ' + r.maa_user_id);
+      APP.checkAuth();
+    } catch { APP.toast('操作失败'); }
+  },
+
   toast(msg) {
     const el = document.createElement('div');
     el.className = 'toast';
@@ -50,7 +59,11 @@ const APP = {
         this.showLogin();
       } else {
         document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('auth-status').textContent = '';
+        if (r.maa_user_id) {
+          document.getElementById('auth-status').innerHTML = `${r.username || ''} | MAA: <code>${r.maa_user_id}</code> <button class=\"sm secondary\" onclick=\"APP.rotateMaaId()\">换号</button>`;
+        } else {
+          document.getElementById('auth-status').textContent = r.username || '';
+        }
       }
     } catch { /* server not ready yet */ }
   },
@@ -147,8 +160,12 @@ document.getElementById('login-submit').addEventListener('click', async () => {
   const r = await api.login(username, password);
   if (r.authenticated) {
     document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('auth-status').textContent = r.username || '';
     APP.checkAuth();
+    if (r.maa_user_id) {
+      document.getElementById('auth-status').innerHTML = `${r.username} | MAA: <code>${r.maa_user_id}</code> <button class=\"sm secondary\" onclick=\"APP.rotateMaaId()\" title=\"重新生成\">换号</button>`;
+    } else {
+      document.getElementById('auth-status').textContent = r.username || '';
+    }
   } else {
     errEl.textContent = r.error || '登录失败';
     errEl.style.display = 'block';

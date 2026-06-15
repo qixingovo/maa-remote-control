@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('../config');
 const account = require('../modules/account');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 router.use(express.json());
@@ -58,6 +59,15 @@ router.get('/check', (req, res) => {
   }
   if (req.session.authenticated) return res.json({ authenticated: true, username: 'admin', role: 'admin' });
   res.json({ authenticated: false });
+});
+
+// Regenerate MAA user ID
+router.post('/rotate-maa-id', (req, res) => {
+  const acct = auth.getAccount(req);
+  if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });
+  const result = account.rotateMaaUserId(acct.id);
+  if (result.error) return res.status(400).json({ error: result.error });
+  res.json({ maa_user_id: result.maa_user_id });
 });
 
 // List accounts (admin only)

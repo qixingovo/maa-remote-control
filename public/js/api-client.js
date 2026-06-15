@@ -16,6 +16,7 @@ const api = {
   register(username, password) { return this.request('POST', '/api/auth/register', { username, password }); },
   logout() { return this.request('POST', '/api/auth/logout'); },
   checkAuth() { return this.request('GET', '/api/auth/check'); },
+  rotateMaaId() { return this.request('POST', '/api/auth/rotate-maa-id'); },
 
   // Devices
   getDevices(onlineOnly) {
