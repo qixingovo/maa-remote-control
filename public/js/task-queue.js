@@ -8,6 +8,8 @@ const TaskQueue = {
     document.getElementById('filter-apply').addEventListener('click', () => this.applyFilter());
     // Settings panel
     document.getElementById('cfg-apply').addEventListener('click', () => this.applySettings());
+    // LinkStart presets
+    document.getElementById('ls-send').addEventListener('click', () => this.sendLinkStartPreset());
   },
 
   async refresh() {
@@ -26,6 +28,7 @@ const TaskQueue = {
     document.getElementById('task-device').innerHTML = opts || '<option value="">-- 无设备 --</option>';
     document.getElementById('filter-device').innerHTML = '<option value="">全部设备</option>' + opts;
     document.getElementById('cfg-device').innerHTML = opts || '<option value="">-- 无设备 --</option>';
+    document.getElementById('ls-device').innerHTML = opts || '<option value="">-- 无设备 --</option>';
   },
 
   async loadTasks() {
@@ -178,17 +181,33 @@ const TaskQueue = {
   async applySettings() {
     const device = document.getElementById('cfg-device').value;
     const stage = document.getElementById('cfg-stage').value;
+    const address = document.getElementById('cfg-address').value.trim();
     if (!device) { APP.toast('请选择目标设备'); return; }
     const tasks = [];
-    if (stage) {
-      tasks.push({ device_uuid: device, type: 'Settings-Stage1', params: stage });
-    }
+    if (stage) tasks.push({ device_uuid: device, type: 'Settings-Stage1', params: stage });
+    if (address) tasks.push({ device_uuid: device, type: 'Settings-ConnectionAddress', params: address });
     if (tasks.length === 0) { APP.toast('请选择要修改的配置'); return; }
     try {
       await api.createTaskBatch(tasks);
-      APP.toast(`配置已下发: 关卡=${stage}`);
+      const labels = [];
+      if (stage) labels.push(`关卡=${stage}`);
+      if (address) labels.push(`地址=${address}`);
+      APP.toast('配置已下发: ' + labels.join(', '));
       this.refresh();
     } catch (e) { APP.toast('配置下发失败'); }
+  },
+
+  async sendLinkStartPreset() {
+    const device = document.getElementById('ls-device').value;
+    if (!device) { APP.toast('请选择目标设备'); return; }
+    const types = Array.from(document.querySelectorAll('.ls-cb:checked')).map(cb => cb.dataset.type);
+    if (types.length === 0) { APP.toast('请至少勾选一项'); return; }
+    const tasks = types.map(type => ({ device_uuid: device, type }));
+    try {
+      await api.createTaskBatch(tasks);
+      APP.toast(`已下发 ${tasks.length} 个长草任务`);
+      this.refresh();
+    } catch (e) { APP.toast('下发失败'); }
   }
 };
 

@@ -158,6 +158,35 @@ body {
 }
 .settings-form select, .settings-form input { width: 100%; }
 
+/* Toggle Grid for LinkStart */
+.toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.toggle-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.toggle-row:has(input:checked) {
+  background: #e8f0fe;
+  color: var(--accent);
+}
+
 /* Quick Dispatch */
 .quick-dispatch {
   display: flex;

@@ -119,13 +119,17 @@
             <button id="task-enqueue">加入队列</button>
           </div>
         </div>
-        <!-- MAA Setting<span xmlns="http://www.w3.org/1999/xhtml">s Panel</span> -->
+        <!-- MAA Full Config Panel -->
         <div class="panel">
           <div class="panel-header">
-            <h2>MAA 配置</h2>
-            <span style="font-size:12px;color:var(--text-secondary)">下发配置后 MAA 下次执行任务时生效</span>
+            <h2>远程配置</h2>
+            <span style="font-size:12px;color:var(--text-secondary)">配置通过 Settings-* 任务下发，MAA 收到后即时生效</span>
           </div>
           <div class="settings-form">
+            <div class="form-group">
+              <label>连接地址 (ADB)</label>
+              <input type="text" id="cfg-address" placeholder="如 127.0.0.1:16384，留空不修改">
+            </div>
             <div class="form-group">
               <label>刷关卡</label>
               <select id="cfg-stage">
@@ -163,11 +167,31 @@
                 </optgroup>
               </select>
             </div>
-            <div class="form-group">
-              <label>目标设备</label>
-              <select id="cfg-device"></select>
-            </div>
-            <button id="cfg-apply" style="width:100%">下发配置</button>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label>目标设备</label>
+            <select id="cfg-device"></select>
+          </div>
+          <button id="cfg-apply" style="width:100%;margin-top:4px">下发配置</button>
+        </div>
+        <!-- LinkStart Quick Toggles -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>一键长草预设</h2>
+            <button id="ls-send" class="accent">全部下发</button>
+          </div>
+          <div class="toggle-grid" id="ls-toggles">
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Base" checked><span>基建换班</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-WakeUp"><span>开始唤醒</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Combat" checked><span>刷理智</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Recruiting" checked><span>自动公招</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mall" checked><span>信用购物</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mission" checked><span>每日/周任务</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-AutoRoguelike"><span>自动肉鸽</span></label>
+            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Reclamation"><span>生息演算</span></label>
+          </div>
+          <div class="form-group" style="margin-top:10px">
+            <select id="ls-device"></select>
           </div>
         </div>
         <div class="panel">
