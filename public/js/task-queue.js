@@ -9,7 +9,7 @@ const TaskQueue = {
     // Settings panel
     document.getElementById('cfg-apply').addEventListener('click', () => this.applySettings());
     // LinkStart presets
-    document.getElementById('ls-send').addEventListener('click', () => this.sendLinkStartPreset());
+    document.getElementById('cfg-send-all').addEventListener('click', () => this.sendAllConfigured());
   },
 
   async refresh() {
@@ -197,15 +197,23 @@ const TaskQueue = {
     } catch (e) { APP.toast('配置下发失败'); }
   },
 
-  async sendLinkStartPreset() {
+  async sendAllConfigured() {
     const device = document.getElementById('ls-device').value;
     if (!device) { APP.toast('请选择目标设备'); return; }
+    const tasks = [];
+    // Check combat stage setting
+    const stageEl = document.querySelector('.cfg-sub-stage');
+    if (stageEl && stageEl.value) {
+      tasks.push({ device_uuid: device, type: 'Settings-Stage1', params: stageEl.value });
+    }
+    // Collect checked LinkStart tasks
     const types = Array.from(document.querySelectorAll('.ls-cb:checked')).map(cb => cb.dataset.type);
-    if (types.length === 0) { APP.toast('请至少勾选一项'); return; }
-    const tasks = types.map(type => ({ device_uuid: device, type }));
+    types.forEach(type => tasks.push({ device_uuid: device, type }));
+    if (tasks.length === 0) { APP.toast('请至少勾选一项功能'); return; }
     try {
       await api.createTaskBatch(tasks);
-      APP.toast(`已下发 ${tasks.length} 个长草任务`);
+      const configCount = stageEl && stageEl.value ? 1 : 0;
+      APP.toast(`配置${configCount}项 + ${types.length}个任务已下发`);
       this.refresh();
     } catch (e) { APP.toast('下发失败'); }
   }

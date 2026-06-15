@@ -187,6 +187,40 @@ body {
   color: var(--accent);
 }
 
+/* Accordion */
+.accordion {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.acc-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.acc-head .toggle-row {
+  padding: 0;
+  background: none;
+  margin: 0;
+}
+.acc-head .toggle-row input { margin: 0; }
+.acc-arrow { color: var(--text-secondary); font-size: 10px; transition: transform 0.2s; }
+.accordion.open .acc-arrow { transform: rotate(180deg); }
+.acc-body {
+  display: none;
+  padding: 0 12px 12px;
+  font-size: 13px;
+}
+.accordion.open .acc-body { display: block; }
+.acc-body .form-group { margin-bottom: 8px; }
+.acc-body .form-group label { font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 3px; }
+.acc-body select, .acc-body input { width: 100%; min-height: 40px; }
+
 /* Quick Dispatch */
 .quick-dispatch {
   display: flex;

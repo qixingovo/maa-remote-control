@@ -174,23 +174,106 @@
           </div>
           <button id="cfg-apply" style="width:100%;margin-top:4px">下发配置</button>
         </div>
-        <!-- LinkStart Quick Toggles -->
+        <!-- Detailed Feature Config -->
         <div class="panel">
           <div class="panel-header">
-            <h2>一键长草预设</h2>
-            <button id="ls-send" class="accent">全部下发</button>
+            <h2>功能详细配置</h2>
+            <button id="cfg-send-all">下发全部已选</button>
           </div>
-          <div class="toggle-grid" id="ls-toggles">
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Base" checked><span>基建换班</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-WakeUp"><span>开始唤醒</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Combat" checked><span>刷理智</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Recruiting" checked><span>自动公招</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mall" checked><span>信用购物</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mission" checked><span>每日/周任务</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-AutoRoguelike"><span>自动肉鸽</span></label>
-            <label class="toggle-row"><input type="checkbox" class="ls-cb" data-type="LinkStart-Reclamation"><span>生息演算</span></label>
+          <div class="accordion" id="acc-combat">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Combat" checked></label>
+              <span style="flex:1;font-weight:600">刷理智</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <div class="form-group"><label>关卡 (远程可改)</label>
+                <select class="cfg-sub-stage"><option value="">MAA当前设置</option>
+                  <optgroup label="主线"><option value="1-7">1-7 固源岩</option><option value="6-11">6-11 晶体元件</option><option value="12-17">12-17 切削液</option></optgroup>
+                  <optgroup label="物资"><option value="CE-6">CE-6 龙门币</option><option value="LS-6">LS-6 经验</option><option value="AP-5">AP-5 红票</option></optgroup>
+                </select></div>
+              <div class="form-group"><label>作战次数 <span style="color:var(--text-secondary);font-weight:400;font-size:11px">需在MAA本地设置</span></label>
+                <input type="number" placeholder="MAA本地设置" disabled></div>
+              <div class="form-group"><label>使用药剂 <span style="color:var(--text-secondary);font-weight:400;font-size:11px">需在MAA本地设置</span></label>
+                <select disabled><option>MAA本地设置</option></select></div>
+            </div>
+          </div>
+          <div class="accordion" id="acc-base">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Base" checked></label>
+              <span style="flex:1;font-weight:600">基建换班</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <div class="form-group"><label>基建模式 <span style="color:var(--text-secondary);font-weight:400;font-size:11px">需在MAA本地设置</span></label>
+                <select disabled><option>MAA本地设置</option><option>队列轮换</option><option>自动排班</option></select></div>
+              <div class="form-group"><label>无人机用途 <span style="color:var(--text-secondary);font-weight:400;font-size:11px">需在MAA本地设置</span></label>
+                <select disabled><option>MAA本地设置</option><option>贸易站-龙门币</option><option>制造站-作战记录</option></select></div>
+              <p style="font-size:11px;color:var(--text-secondary)">换班站点（制造站/贸易站/控制中枢/发电站/会客室/办公室）在MAA本地勾选</p>
+            </div>
+          </div>
+          <div class="accordion" id="acc-recruit">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Recruiting" checked></label>
+              <span style="flex:1;font-weight:600">自动公招</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">公招策略、自动刷新、优先标签等均在MAA本地设置中配置。远程控制仅负责触发执行。</p>
+            </div>
+          </div>
+          <div class="accordion" id="acc-mall">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mall" checked></label>
+              <span style="flex:1;font-weight:600">信用购物</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">信用商店购买策略在MAA本地设置中配置。远程控制仅负责触发执行。</p>
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Mission" checked></label>
+              <span style="flex:1;font-weight:600">每日/周任务</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">自动领取每日/每周任务奖励。无需额外配置。</p>
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-WakeUp"></label>
+              <span style="flex:1;font-weight:600">开始唤醒</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">进入游戏并完成日常唤醒流程。无需额外配置。</p>
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-AutoRoguelike"></label>
+              <span style="flex:1;font-weight:600">自动肉鸽</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">肉鸽策略（分队/招募/路线）在MAA本地设置中配置。远程控制仅负责触发执行。</p>
+            </div>
+          </div>
+          <div class="accordion">
+            <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+              <label class="toggle-row" onclick="event.stopPropagation()"><input type="checkbox" class="ls-cb" data-type="LinkStart-Reclamation"></label>
+              <span style="flex:1;font-weight:600">生息演算</span>
+              <span class="acc-arrow">&#9662;</span>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:11px;color:var(--text-secondary)">生息演算策略在MAA本地设置中配置。远程控制仅负责触发执行。</p>
+            </div>
           </div>
           <div class="form-group" style="margin-top:10px">
+            <label>目标设备</label>
             <select id="ls-device"></select>
           </div>
         </div>
