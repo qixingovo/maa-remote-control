@@ -6,6 +6,8 @@ const TaskQueue = {
     document.getElementById('task-enqueue').addEventListener('click', () => this.enqueue());
     document.getElementById('task-batch-btn').addEventListener('click', () => this.showBatchForm());
     document.getElementById('filter-apply').addEventListener('click', () => this.applyFilter());
+    // Settings panel
+    document.getElementById('cfg-apply').addEventListener('click', () => this.applySettings());
   },
 
   async refresh() {
@@ -23,6 +25,7 @@ const TaskQueue = {
     ).join('');
     document.getElementById('task-device').innerHTML = opts || '<option value="">-- 无设备 --</option>';
     document.getElementById('filter-device').innerHTML = '<option value="">全部设备</option>' + opts;
+    document.getElementById('cfg-device').innerHTML = opts || '<option value="">-- 无设备 --</option>';
   },
 
   async loadTasks() {
@@ -170,6 +173,22 @@ const TaskQueue = {
       APP.closeModal();
       this.refresh();
     } catch (e) { APP.toast('批量下发失败'); }
+  },
+
+  async applySettings() {
+    const device = document.getElementById('cfg-device').value;
+    const stage = document.getElementById('cfg-stage').value;
+    if (!device) { APP.toast('请选择目标设备'); return; }
+    const tasks = [];
+    if (stage) {
+      tasks.push({ device_uuid: device, type: 'Settings-Stage1', params: stage });
+    }
+    if (tasks.length === 0) { APP.toast('请选择要修改的配置'); return; }
+    try {
+      await api.createTaskBatch(tasks);
+      APP.toast(`配置已下发: 关卡=${stage}`);
+      this.refresh();
+    } catch (e) { APP.toast('配置下发失败'); }
   }
 };
 

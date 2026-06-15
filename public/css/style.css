@@ -140,6 +140,24 @@ body {
 }
 .panel-header h2 { margin-bottom: 0; }
 
+/* Settings Form */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-form .form-group { margin-bottom: 0; }
+.settings-form .form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.settings-form select, .settings-form input { width: 100%; }
+
 /* Quick Dispatch */
 .quick-dispatch {
   display: flex;

@@ -119,6 +119,57 @@
             <button id="task-enqueue">加入队列</button>
           </div>
         </div>
+        <!-- MAA Setting<span xmlns="http://www.w3.org/1999/xhtml">s Panel</span> -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>MAA 配置</h2>
+            <span style="font-size:12px;color:var(--text-secondary)">下发配置后 MAA 下次执行任务时生效</span>
+          </div>
+          <div class="settings-form">
+            <div class="form-group">
+              <label>刷关卡</label>
+              <select id="cfg-stage">
+                <option value="">不修改</option>
+                <optgroup label="主线刷材料">
+                  <option value="1-7">1-7 固源岩</option>
+                  <option value="4-4">4-4 研磨石</option>
+                  <option value="4-6">4-6 扭转醇</option>
+                  <option value="4-7">4-7 轻锰矿</option>
+                  <option value="5-5">5-5 海胆</option>
+                  <option value="6-11">6-11 晶体元件</option>
+                  <option value="7-18">7-18 异铁组</option>
+                  <option value="8-7">8-7 铁块</option>
+                  <option value="9-19">9-19 晶体电路</option>
+                  <option value="10-6">10-6 聚合剂</option>
+                  <option value="11-14">11-14 溶媒</option>
+                  <option value="12-17">12-17 切削液</option>
+                </optgroup>
+                <optgroup label="物资筹备">
+                  <option value="CE-6">CE-6 龙门币</option>
+                  <option value="LS-6">LS-6 经验</option>
+                  <option value="AP-5">AP-5 红票</option>
+                  <option value="SK-5">SK-5 碳</option>
+                  <option value="CA-5">CA-5 技能书</option>
+                </optgroup>
+                <optgroup label="芯片搜索">
+                  <option value="PR-A-1">PR-A-1 近卫/特种</option>
+                  <option value="PR-A-2">PR-A-2 重装/辅助</option>
+                  <option value="PR-B-1">PR-B-1 狙击/术师</option>
+                  <option value="PR-B-2">PR-B-2 先锋/医疗</option>
+                  <option value="PR-C-1">PR-C-1 特种</option>
+                  <option value="PR-C-2">PR-C-2 辅助</option>
+                  <option value="PR-D-1">PR-D-1 术师</option>
+                  <option value="PR-D-2">PR-D-2 医疗</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>目标设备</label>
+              <select id="cfg-device"></select>
+            </div>
+            <button id="cfg-apply" style="width:100%">下发配置</button>
+          </div>
+        </div>
         <div class="panel">
           <div class="panel-header">
             <h2>任务队列</h2>
