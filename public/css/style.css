@@ -230,6 +230,14 @@ button.sm { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius:
   background: #e8f0fe;
   color: var(--accent);
 }
+.toggle-row.wide {
+  flex: 1;
+  cursor: pointer;
+}
+.toggle-row.wide span {
+  font-weight: 600;
+  flex: 1;
+}
 
 /* Accordion */
 .accordion {
@@ -253,7 +261,7 @@ button.sm { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius:
   margin: 0;
 }
 .acc-head .toggle-row input { margin: 0; }
-.acc-arrow { color: var(--text-secondary); font-size: 10px; transition: transform 0.2s; }
+.acc-arrow { color: var(--text-secondary); font-size: 10px; transition: transform 0.2s; cursor: pointer; padding: 8px; flex-shrink: 0; }
 .accordion.open .acc-arrow { transform: rotate(180deg); }
 .acc-body {
   display: none;
