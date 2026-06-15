@@ -87,6 +87,50 @@ body {
 .tab { display: none; }
 .tab.active { display: block; }
 
+/* Sub-tabs */
+.sub-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.sub-tab {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: auto;
+}
+.sub-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+.sub-panel { display: none; }
+.sub-panel.active { display: block; }
+
+/* Quick Bar */
+.quick-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.quick-bar select { flex: 1; min-width: 0; }
+.quick-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Small buttons */
+button.sm { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+
 /* Stats Grid - 2x2 on mobile */
 .stats-grid {
   display: grid;
