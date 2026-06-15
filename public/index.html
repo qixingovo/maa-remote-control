@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAA Remote Control</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>MAA Remote Control</h1>
+    <span id="auth-status"></span>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <a href="#dashboard" class="nav-item active" data-tab="dashboard">仪表盘</a>
+      <a href="#devices" class="nav-item" data-tab="devices">设备管理</a>
+      <a href="#tasks" class="nav-item" data-tab="tasks">任务队列</a>
+      <a href="#screenshots" class="nav-item" data-tab="screenshots">截图画廊</a>
+    </nav>
+
+    <main class="content">
+      <!-- Dashboard -->
+      <section id="dashboard" class="tab active">
+        <div class="stats-grid" id="stats-cards"></div>
+        <div class="panel">
+          <h2>快速下发</h2>
+          <div class="quick-dispatch">
+            <select id="qd-device"></select>
+            <select id="qd-type">
+              <optgroup label="一键长草">
+                <option value="LinkStart">LinkStart (全部)</option>
+                <option value="LinkStart-Base">切换&导航到基建</option>
+                <option value="LinkStart-WakeUp">开始唤醒</option>
+                <option value="LinkStart-Combat">刷理智</option>
+                <option value="LinkStart-Recruiting">自动公招</option>
+                <option value="LinkStart-Mall">信用及购物</option>
+                <option value="LinkStart-Mission">每日&每周任务</option>
+                <option value="LinkStart-AutoRoguelike">自动集成战略</option>
+                <option value="LinkStart-Reclamation">生息演算</option>
+              </optgroup>
+              <optgroup label="截图">
+                <option value="CaptureImage">截图 (排队)</option>
+                <option value="CaptureImageNow">截图 (立即)</option>
+              </optgroup>
+              <optgroup label="工具箱">
+                <option value="Toolbox-GachaOnce">牛牛抽卡x1</option>
+                <option value="Toolbox-GachaTenTimes">牛牛抽卡x10</option>
+              </optgroup>
+              <optgroup label="控制">
+                <option value="StopTask">停止当前任务</option>
+                <option value="HeartBeat">心跳检测</option>
+              </optgroup>
+            </select>
+            <button id="qd-send">发送</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>最近活动</h2>
+          <table id="recent-activity">
+            <thead><tr><th>时间</th><th>设备</th><th>任务</th><th>状态</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Devices -->
+      <section id="devices" class="tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>设备列表</h2>
+            <button id="dev-add-btn">手动添加设备</button>
+          </div>
+          <table id="devices-table">
+            <thead><tr><th>状态</th><th>名称</th><th>设备 UUID</th><th>用户标识符</th><th>模拟器</th><th>最后在线</th><th>待执行</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tasks -->
+      <section id="tasks" class="tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>创建任务</h2>
+            <button id="task-batch-btn">批量下发</button>
+          </div>
+          <div class="task-create-form">
+            <select id="task-device"></select>
+            <select id="task-type">
+              <optgroup label="一键长草">
+                <option value="LinkStart">LinkStart (全部)</option>
+                <option value="LinkStart-Base">基建</option>
+                <option value="LinkStart-WakeUp">唤醒</option>
+                <option value="LinkStart-Combat">刷理智</option>
+                <option value="LinkStart-Recruiting">自动公招</option>
+                <option value="LinkStart-Mall">信用购物</option>
+                <option value="LinkStart-Mission">每日每周</option>
+                <option value="LinkStart-AutoRoguelike">集成战略</option>
+                <option value="LinkStart-Reclamation">生息演算</option>
+              </optgroup>
+              <optgroup label="截图">
+                <option value="CaptureImage">截图(排队)</option>
+                <option value="CaptureImageNow">截图(立即)</option>
+              </optgroup>
+              <optgroup label="工具箱">
+                <option value="Toolbox-GachaOnce">牛牛抽卡x1</option>
+                <option value="Toolbox-GachaTenTimes">牛牛抽卡x10</option>
+              </optgroup>
+              <optgroup label="控制">
+                <option value="StopTask">停止任务</option>
+                <option value="HeartBeat">心跳</option>
+              </optgroup>
+            </select>
+            <input type="text" id="task-params" placeholder="参数 (可选)" style="width:150px">
+            <button id="task-enqueue">加入队列</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>任务队列</h2>
+            <div class="filter-bar">
+              <select id="filter-device"><option value="">全部设备</option></select>
+              <select id="filter-status">
+                <option value="">全部状态</option>
+                <option value="pending">等待中</option>
+                <option value="dispatched">已下发</option>
+                <option value="running">执行中</option>
+                <option value="completed">已完成</option>
+                <option value="failed">失败</option>
+                <option value="cancelled">已取消</option>
+              </select>
+              <button id="filter-apply">筛选</button>
+            </div>
+          </div>
+          <table id="tasks-table">
+            <thead><tr><th>任务 UUID</th><th>设备</th><th>类型</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Screenshots -->
+      <section id="screenshots" class="tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>截图画廊</h2>
+            <div class="filter-bar">
+              <select id="shot-device-filter"><option value="">全部设备</option></select>
+              <button id="shot-delete-selected" style="display:none">删除选中</button>
+            </div>
+          </div>
+          <div class="screenshot-grid" id="screenshot-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Edit device modal -->
+  <div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <!-- Login modal -->
+  <div class="modal-overlay" id="login-overlay" style="display:none">
+    <div class="modal login-modal">
+      <h2>登录</h2>
+      <input type="password" id="login-password" placeholder="管理员密码">
+      <button id="login-submit">登录</button>
+      <p id="login-error" style="color:red;display:none">密码错误</p>
+    </div>
+  </div>
+
+  <script src="/js/api-client.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/devices.js"></script>
+  <script src="/js/task-queue.js"></script>
+  <script src="/js/screenshots.js"></script>
+</body>
+</html>
