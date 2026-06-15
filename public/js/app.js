@@ -110,15 +110,49 @@ const APP = {
   }
 };
 
-// Login
+// Auth state
+let isRegistering = false;
+
+document.getElementById('toggle-reg').addEventListener('click', (e) => {
+  e.preventDefault();
+  isRegistering = !isRegistering;
+  document.getElementById('auth-title').textContent = isRegistering ? '注册' : '登录';
+  document.getElementById('login-submit').textContent = isRegistering ? '注册' : '登录';
+  document.getElementById('reg-extra').style.display = isRegistering ? 'block' : 'none';
+  document.getElementById('toggle-reg').textContent = isRegistering ? '已有账号？登录' : '注册新账号';
+  document.getElementById('login-username').style.display = isRegistering ? 'block' : 'block';
+  document.getElementById('login-error').style.display = 'none';
+});
+
 document.getElementById('login-submit').addEventListener('click', async () => {
-  const pw = document.getElementById('login-password').value;
-  const r = await api.login(pw);
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+
+  if (isRegistering) {
+    const confirm = document.getElementById('reg-confirm').value;
+    if (password !== confirm) { errEl.textContent = '两次密码不一致'; errEl.style.display = 'block'; return; }
+    const r = await api.register(username, password);
+    if (r.error) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
+    // Show MAA user ID
+    errEl.style.color = 'green'; errEl.textContent = '注册成功！MAA标识符: ' + r.maa_user_id; errEl.style.display = 'block';
+    isRegistering = false;
+    document.getElementById('auth-title').textContent = '登录';
+    document.getElementById('login-submit').textContent = '登录';
+    document.getElementById('reg-extra').style.display = 'none';
+    document.getElementById('toggle-reg').textContent = '注册新账号';
+    return;
+  }
+
+  const r = await api.login(username, password);
   if (r.authenticated) {
     document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('auth-status').textContent = r.username || '';
     APP.checkAuth();
   } else {
-    document.getElementById('login-error').style.display = 'block';
+    errEl.textContent = r.error || '登录失败';
+    errEl.style.display = 'block';
+    errEl.style.color = 'red';
   }
 });
 

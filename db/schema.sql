@@ -1,7 +1,26 @@
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS accounts (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    username        TEXT    NOT NULL UNIQUE,
+    password_hash   TEXT    NOT NULL,
+    maa_user_id     TEXT    NOT NULL UNIQUE,
+    role            TEXT    NOT NULL DEFAULT 'user' CHECK(role IN ('admin','user')),
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS devices (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_uuid     TEXT    NOT NULL UNIQUE,
+    user_uuid       TEXT    NOT NULL,
+    account_id      INTEGER REFERENCES accounts(id) ON DELETE SET NULL,
+    name            TEXT    DEFAULT '',
+    emulator_type   TEXT    DEFAULT '',
+    last_seen_at    TEXT,
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     device_uuid     TEXT    NOT NULL UNIQUE,
     user_uuid       TEXT    NOT NULL,

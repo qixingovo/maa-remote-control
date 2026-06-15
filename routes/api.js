@@ -2,7 +2,6 @@ const express = require('express');
 const deviceRegistry = require('../modules/device-registry');
 const taskQueue = require('../modules/task-queue');
 const db = require('../db');
-const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 router.use(express.json());
@@ -11,17 +10,27 @@ router.use(express.json());
 const auth = require('../middleware/auth');
 router.use(auth.apiGuard);
 
+// Helper: get account ID for filtering (null = admin sees all)
+function filterAccountId(req) {
+  const acct = auth.getAccount(req);
+  if (!acct || acct.role === 'admin') return null;
+  return acct.id;
+}
+
 // ===== DEVICES =====
 
 router.get('/devices', (req, res) => {
   const onlineOnly = req.query.online === 'true';
-  const devices = deviceRegistry.listDevices({ onlineOnly });
+  const accountId = filterAccountId(req);
+  const devices = deviceRegistry.listDevices({ onlineOnly, accountId });
   res.json({ devices });
 });
 
 router.get('/devices/:uuid', (req, res) => {
   const device = deviceRegistry.getDevice(req.params.uuid);
   if (!device) return res.status(404).json({ error: 'Device not found' });
+  const accountId = filterAccountId(req);
+  if (accountId !== null && device.account_id !== accountId) return res.status(403).json({ error: '无权访问此设备' });
   const pendingCount = taskQueue.getPendingCount(req.params.uuid);
   res.json({ ...device, pendingCount });
 });
@@ -43,13 +52,15 @@ router.delete('/devices/:uuid', (req, res) => {
 
 router.get('/tasks', (req, res) => {
   const { device, status, limit, offset } = req.query;
+  const accountId = filterAccountId(req);
   const tasks = taskQueue.listTasks({
     deviceUuid: device,
     status: status,
+    accountId: accountId,
     limit: parseInt(limit) || 50,
     offset: parseInt(offset) || 0
   });
-  const total = taskQueue.countTasks({ deviceUuid: device, status });
+  const total = taskQueue.countTasks({ deviceUuid: device, status, accountId });
   res.json({ tasks, total });
 });
 
@@ -92,9 +103,11 @@ router.patch('/tasks/:uuid', (req, res) => {
 
 router.get('/results', (req, res) => {
   const { device, since, limit } = req.query;
+  const accountId = filterAccountId(req);
   const results = taskQueue.listResults({
     deviceUuid: device,
     since,
+    accountId,
     limit: parseInt(limit) || 50
   });
   res.json({ results });
@@ -109,14 +122,25 @@ router.get('/results/:taskUuid', (req, res) => {
 // ===== STATUS =====
 
 router.get('/status', (req, res) => {
-  const onlineDevices = deviceRegistry.getOnlineDevices();
-  const pendingTasks = db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'").get().count;
+  const accountId = filterAccountId(req);
+  const onlineDevices = deviceRegistry.listDevices({ onlineOnly: true, accountId });
+  let whereTasks = "1=1";
+  let whereDevices = "1=1";
+  const params = [];
+  if (accountId !== null) {
+    whereTasks = "t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)";
+    whereDevices = "account_id = ?";
+    params.push(accountId);
+  }
+  const pendingTasks = db.prepare(
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'pending'`
+  ).get(...params).count;
   const completedToday = db.prepare(
-    "SELECT COUNT(*) as count FROM tasks WHERE status = 'completed' AND date(completed_at) = date('now')"
-  ).get().count;
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'completed' AND date(t.completed_at) = date('now')`
+  ).get(...params).count;
   const failedToday = db.prepare(
-    "SELECT COUNT(*) as count FROM tasks WHERE status = 'failed' AND date(completed_at) = date('now')"
-  ).get().count;
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'failed' AND date(t.completed_at) = date('now')`
+  ).get(...params).count;
 
   res.json({
     onlineDevices: onlineDevices.length,

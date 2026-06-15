@@ -12,7 +12,8 @@ const api = {
   },
 
   // Auth
-  login(password) { return this.request('POST', '/api/auth/login', { password }); },
+  login(username, password) { return this.request('POST', '/api/auth/login', { username, password }); },
+  register(username, password) { return this.request('POST', '/api/auth/register', { username, password }); },
   logout() { return this.request('POST', '/api/auth/logout'); },
   checkAuth() { return this.request('GET', '/api/auth/check'); },
 

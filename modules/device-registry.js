@@ -1,16 +1,21 @@
 const db = require('../db');
+const account = require('./account');
 
 function findOrCreate(userUuid, deviceUuid) {
   const existing = db.prepare('SELECT * FROM devices WHERE device_uuid = ?').get(deviceUuid);
+  // Link to account based on MAA user identifier
+  const acct = account.getByMaaUserId(userUuid);
+  const accountId = acct ? acct.id : null;
+
   if (existing) {
-    // Update user_uuid if it changed
-    if (existing.user_uuid !== userUuid) {
-      db.prepare('UPDATE devices SET user_uuid = ?, updated_at = datetime(\'now\') WHERE device_uuid = ?')
-        .run(userUuid, deviceUuid);
+    if (existing.user_uuid !== userUuid || existing.account_id !== accountId) {
+      db.prepare('UPDATE devices SET user_uuid = ?, account_id = ?, updated_at = datetime(\'now\') WHERE device_uuid = ?')
+        .run(userUuid, accountId, deviceUuid);
     }
     return existing;
   }
-  db.prepare('INSERT INTO devices (device_uuid, user_uuid) VALUES (?, ?)').run(deviceUuid, userUuid);
+  db.prepare('INSERT INTO devices (device_uuid, user_uuid, account_id) VALUES (?, ?, ?)')
+    .run(deviceUuid, userUuid, accountId);
   return db.prepare('SELECT * FROM devices WHERE device_uuid = ?').get(deviceUuid);
 }
 
@@ -18,13 +23,13 @@ function getDevice(deviceUuid) {
   return db.prepare('SELECT * FROM devices WHERE device_uuid = ?').get(deviceUuid) || null;
 }
 
-function listDevices({ onlineOnly = false } = {}) {
-  if (onlineOnly) {
-    return db.prepare(
-      "SELECT * FROM devices WHERE last_seen_at > datetime('now', '-30 seconds') ORDER BY last_seen_at DESC"
-    ).all();
-  }
-  return db.prepare('SELECT * FROM devices ORDER BY last_seen_at DESC').all();
+function listDevices({ onlineOnly = false, accountId = null } = {}) {
+  let sql = 'SELECT * FROM devices WHERE 1=1';
+  const params = [];
+  if (onlineOnly) { sql += " AND last_seen_at > datetime('now', '-30 seconds')"; }
+  if (accountId !== null) { sql += ' AND account_id = ?'; params.push(accountId); }
+  sql += ' ORDER BY last_seen_at DESC';
+  return db.prepare(sql).all(...params);
 }
 
 function updateDevice(deviceUuid, { name, emulatorType } = {}) {

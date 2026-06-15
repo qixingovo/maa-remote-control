@@ -58,21 +58,29 @@ function getTask(taskUuid) {
   return db.prepare('SELECT * FROM tasks WHERE task_uuid = ?').get(taskUuid) || null;
 }
 
-function listTasks({ deviceUuid, status, limit = 50, offset = 0 } = {}) {
-  let sql = 'SELECT * FROM tasks WHERE 1=1';
+function listTasks({ deviceUuid, status, accountId, limit = 50, offset = 0 } = {}) {
+  let sql = 'SELECT t.* FROM tasks t WHERE 1=1';
   const params = [];
-  if (deviceUuid) { sql += ' AND device_uuid = ?'; params.push(deviceUuid); }
-  if (status) { sql += ' AND status = ?'; params.push(status); }
-  sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  if (deviceUuid) { sql += ' AND t.device_uuid = ?'; params.push(deviceUuid); }
+  if (status) { sql += ' AND t.status = ?'; params.push(status); }
+  if (accountId !== undefined && accountId !== null) {
+    sql += ' AND t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)';
+    params.push(accountId);
+  }
+  sql += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
   params.push(limit, offset);
   return db.prepare(sql).all(...params);
 }
 
-function countTasks({ deviceUuid, status } = {}) {
-  let sql = 'SELECT COUNT(*) as count FROM tasks WHERE 1=1';
+function countTasks({ deviceUuid, status, accountId } = {}) {
+  let sql = 'SELECT COUNT(*) as count FROM tasks t WHERE 1=1';
   const params = [];
-  if (deviceUuid) { sql += ' AND device_uuid = ?'; params.push(deviceUuid); }
-  if (status) { sql += ' AND status = ?'; params.push(status); }
+  if (deviceUuid) { sql += ' AND t.device_uuid = ?'; params.push(deviceUuid); }
+  if (status) { sql += ' AND t.status = ?'; params.push(status); }
+  if (accountId !== undefined && accountId !== null) {
+    sql += ' AND t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)';
+    params.push(accountId);
+  }
   return db.prepare(sql).get(...params).count;
 }
 
@@ -102,7 +110,7 @@ function getTaskResults(taskUuid) {
   ).all(taskUuid);
 }
 
-function listResults({ deviceUuid, since, limit = 50 } = {}) {
+function listResults({ deviceUuid, since, accountId, limit = 50 } = {}) {
   let sql = `
     SELECT tr.*, t.type, t.device_uuid
     FROM task_results tr
@@ -112,6 +120,10 @@ function listResults({ deviceUuid, since, limit = 50 } = {}) {
   const params = [];
   if (deviceUuid) { sql += ' AND t.device_uuid = ?'; params.push(deviceUuid); }
   if (since) { sql += ' AND tr.created_at > ?'; params.push(since); }
+  if (accountId !== undefined && accountId !== null) {
+    sql += ' AND t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)';
+    params.push(accountId);
+  }
   sql += ' ORDER BY tr.created_at DESC LIMIT ?';
   params.push(limit);
   return db.prepare(sql).all(...params);
