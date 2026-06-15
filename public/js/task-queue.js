@@ -10,6 +10,13 @@ const TaskQueue = {
     document.getElementById('cfg-apply').addEventListener('click', () => this.applySettings());
     // LinkStart presets
     document.getElementById('cfg-send-all').addEventListener('click', () => this.sendAllConfigured());
+    // Accordion expand/collapse
+    document.getElementById('cfg-expand-all').addEventListener('click', () => {
+      document.querySelectorAll('.accordion').forEach(a => a.classList.add('open'));
+    });
+    document.getElementById('cfg-collapse-all').addEventListener('click', () => {
+      document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
+    });
   },
 
   async refresh() {

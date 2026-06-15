@@ -178,7 +178,11 @@
         <div class="panel">
           <div class="panel-header">
             <h2>功能详细配置</h2>
-            <button id="cfg-send-all">下发全部已选</button>
+            <div style="display:flex;gap:6px">
+              <button class="secondary" id="cfg-expand-all">展开全部</button>
+              <button class="secondary" id="cfg-collapse-all">收起全部</button>
+              <button id="cfg-send-all">下发</button>
+            </div>
           </div>
           <div class="accordion" id="acc-combat">
             <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
