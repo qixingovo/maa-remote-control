@@ -8,8 +8,8 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>MAA Remote Control</h1>
-    <span id="auth-status"></span>
+    <span id="user-info"></span>
+    <button id="topbar-logout" class="secondary sm" style="display:none">退出</button>
   </header>
 
   <div class="layout">
@@ -18,6 +18,7 @@
       <a href="#devices" class="nav-item" data-tab="devices">设备管理</a>
       <a href="#tasks" class="nav-item" data-tab="tasks">任务队列</a>
       <a href="#screenshots" class="nav-item" data-tab="screenshots">截图画廊</a>
+      <a href="#my" class="nav-item" data-tab="my">我的</a>
     </nav>
 
     <main class="content">
@@ -206,6 +207,31 @@
         </div>
       </section>
 
+      <!-- My Account -->
+      <section id="my" class="tab">
+        <div class="panel" id="my-logged-out">
+          <div style="text-align:center;padding:20px">
+            <p style="margin-bottom:12px;color:var(--text-secondary)">登录以管理设备和查看 MAA 标识符</p>
+            <button onclick="APP.showLogin()">登录 / 注册</button>
+          </div>
+        </div>
+        <div class="panel" id="my-logged-in" style="display:none">
+          <div style="text-align:center;padding:4px 0 16px">
+            <div style="font-size:48px;margin-bottom:8px">&#128100;</div>
+            <h2 id="my-username" style="margin-bottom:4px"></h2>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">MAA 标识符</p>
+            <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:8px">
+              <code id="my-maa-id" style="font-size:18px;font-weight:700;background:var(--bg);padding:8px 16px;border-radius:8px"></code>
+              <button class="secondary sm" onclick="APP.rotateMaaId()">换号</button>
+            </div>
+            <p style="color:var(--text-secondary);font-size:11px">将此标识符填入 MAA 设置的「用户标识符」</p>
+          </div>
+        </div>
+        <div class="panel">
+          <button class="danger" id="my-logout-btn" style="width:100%;display:none">退出登录</button>
+        </div>
+      </section>
+
       <!-- Screenshots -->
       <section id="screenshots" class="tab">
         <div class="panel">
@@ -239,6 +265,10 @@
     <button class="bottom-nav-item" data-tab="screenshots">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
       截图
+    </button>
+    <button class="bottom-nav-item" data-tab="my">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      我的
     </button>
   </nav>
 

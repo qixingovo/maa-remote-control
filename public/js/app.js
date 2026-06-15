@@ -1,9 +1,11 @@
 // App shell: tab routing, auth, shared utilities
 const APP = {
   currentTab: 'dashboard',
+  account: null,
 
   init() {
     this.bindTabs();
+    this.bindLogout();
     this.checkAuth();
     Dashboard.init();
     Devices.init();
@@ -24,6 +26,19 @@ const APP = {
     this.switchTab((location.hash.replace('#', '') || 'dashboard'), false);
   },
 
+  bindLogout() {
+    document.getElementById('topbar-logout').addEventListener('click', () => this.doLogout());
+    document.getElementById('my-logout-btn').addEventListener('click', () => this.doLogout());
+  },
+
+  async doLogout() {
+    await api.logout();
+    this.account = null;
+    this.updateUI();
+    this.switchTab('dashboard');
+    this.showLogin();
+  },
+
   switchTab(tab, updateHash = true) {
     if (updateHash) location.hash = tab;
     this.currentTab = tab;
@@ -33,14 +48,16 @@ const APP = {
     if (tab === 'devices') Devices.refresh();
     if (tab === 'tasks') TaskQueue.refresh();
     if (tab === 'screenshots') Screenshots.refresh();
+    if (tab === 'my') this.renderMyPage();
   },
 
   async rotateMaaId() {
-    if (!confirm('重新生成 MAA 标识符后，旧标识符将立即失效。MAA 客户端需要更新用户标识符。确认？')) return;
+    if (!confirm('重新生成后旧标识符立即失效，MAA 需更新用户标识符。确认？')) return;
     try {
       const r = await api.rotateMaaId();
+      this.account.maa_user_id = r.maa_user_id;
+      this.updateUI();
       APP.toast('新标识符: ' + r.maa_user_id);
-      APP.checkAuth();
     } catch { APP.toast('操作失败'); }
   },
 
@@ -55,17 +72,31 @@ const APP = {
   async checkAuth() {
     try {
       const r = await api.checkAuth();
-      if (!r.authenticated) {
-        this.showLogin();
-      } else {
+      if (r.authenticated) {
+        this.account = r;
+        this.updateUI();
         document.getElementById('login-overlay').style.display = 'none';
-        if (r.maa_user_id) {
-          document.getElementById('auth-status').innerHTML = `${r.username || ''} | MAA: <code>${r.maa_user_id}</code> <button class=\"sm secondary\" onclick=\"APP.rotateMaaId()\">换号</button>`;
-        } else {
-          document.getElementById('auth-status').textContent = r.username || '';
-        }
+      } else {
+        this.account = null;
+        this.updateUI();
+        this.showLogin();
       }
-    } catch { /* server not ready yet */ }
+    } catch { /* */ }
+  },
+
+  updateUI() {
+    const loggedIn = this.account && this.account.username;
+    // Top bar
+    document.getElementById('user-info').textContent = loggedIn ? this.account.username : '未登录';
+    document.getElementById('topbar-logout').style.display = loggedIn ? '' : 'none';
+    // My page
+    document.getElementById('my-logged-out').style.display = loggedIn ? 'none' : '';
+    document.getElementById('my-logged-in').style.display = loggedIn ? '' : 'none';
+    document.getElementById('my-logout-btn').style.display = loggedIn ? '' : 'none';
+    if (loggedIn) {
+      document.getElementById('my-username').textContent = this.account.username;
+      document.getElementById('my-maa-id').textContent = this.account.maa_user_id || '-';
+    }
   },
 
   showLogin() {
@@ -85,15 +116,15 @@ const APP = {
     };
   },
 
-  truncate(uuid) {
-    return uuid ? uuid.substring(0, 8) + '...' : '';
+  renderMyPage() {
+    this.updateUI();
   },
+
+  truncate(uuid) { return uuid ? uuid.substring(0, 8) + '...' : ''; },
 
   timeAgo(dateStr) {
     if (!dateStr) return '从未';
-    const now = new Date();
-    const date = new Date(dateStr + 'Z');
-    const diff = Math.floor((now - date) / 1000);
+    const diff = Math.floor((new Date() - new Date(dateStr + 'Z')) / 1000);
     if (diff < 10) return '刚刚';
     if (diff < 60) return diff + '秒前';
     if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
@@ -133,7 +164,7 @@ document.getElementById('toggle-reg').addEventListener('click', (e) => {
   document.getElementById('login-submit').textContent = isRegistering ? '注册' : '登录';
   document.getElementById('reg-extra').style.display = isRegistering ? 'block' : 'none';
   document.getElementById('toggle-reg').textContent = isRegistering ? '已有账号？登录' : '注册新账号';
-  document.getElementById('login-username').style.display = isRegistering ? 'block' : 'block';
+  document.getElementById('login-username').style.display = 'block';
   document.getElementById('login-error').style.display = 'none';
 });
 
@@ -147,7 +178,6 @@ document.getElementById('login-submit').addEventListener('click', async () => {
     if (password !== confirm) { errEl.textContent = '两次密码不一致'; errEl.style.display = 'block'; return; }
     const r = await api.register(username, password);
     if (r.error) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
-    // Show MAA user ID
     errEl.style.color = 'green'; errEl.textContent = '注册成功！MAA标识符: ' + r.maa_user_id; errEl.style.display = 'block';
     isRegistering = false;
     document.getElementById('auth-title').textContent = '登录';
@@ -161,11 +191,6 @@ document.getElementById('login-submit').addEventListener('click', async () => {
   if (r.authenticated) {
     document.getElementById('login-overlay').style.display = 'none';
     APP.checkAuth();
-    if (r.maa_user_id) {
-      document.getElementById('auth-status').innerHTML = `${r.username} | MAA: <code>${r.maa_user_id}</code> <button class=\"sm secondary\" onclick=\"APP.rotateMaaId()\" title=\"重新生成\">换号</button>`;
-    } else {
-      document.getElementById('auth-status').textContent = r.username || '';
-    }
   } else {
     errEl.textContent = r.error || '登录失败';
     errEl.style.display = 'block';
