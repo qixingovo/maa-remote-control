@@ -627,6 +627,10 @@ table { display: none; }
   /* Accordion two-column */
   .accordion-column { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
+  /* My page two-column */
+  .my-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .my-layout .panel { margin-bottom: 0; }
+
   .modal {
     border-radius: var(--radius);
     min-width: 380px;
