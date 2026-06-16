@@ -585,6 +585,8 @@ table { display: none; }
   .task-create-form { flex-direction: row; }
 
   .card-list { display: none; }
+  #user-list.card-list { display: flex; max-width: 600px; }
+  #user-list .card-item { max-width: 600px; }
   table { display: table; width: 100%; border-collapse: collapse; font-size: 13px; }
   th {
     text-align: left;
