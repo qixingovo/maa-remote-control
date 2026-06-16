@@ -325,7 +325,6 @@ document.getElementById('login-submit').addEventListener('click', async () => {
   const username = document.getElementById('login-username').value.trim();
   const passwordEl = isRegistering ? document.getElementById('login-password-reg') : document.getElementById('login-password');
   const password = passwordEl.value;
-  const errEl = document.getElementById('login-error');
 
   if (isRegistering) {
     const email = document.getElementById('reg-email').value.trim();
