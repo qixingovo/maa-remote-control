@@ -592,7 +592,11 @@ table { display: none; }
   .quick-dispatch { flex-direction: row; }
   .quick-dispatch select { flex: 1; }
 
-  /* Tasks two-column */
+  /* Tasks two-column - show both panels */
+  .sub-tabs { display: none; }
+  .sub-panel { display: block !important; }
+  #sub-exec { display: block !important; }
+  #sub-queue { display: block !important; }
   .tasks-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
