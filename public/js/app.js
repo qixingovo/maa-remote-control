@@ -247,7 +247,70 @@ document.getElementById('toggle-reg').addEventListener('click', (e) => {
   document.getElementById('login-error').style.display = 'none';
 });
 
+// Forgot password flow
+let isForgot = false;
+
+document.getElementById('forgot-pw').addEventListener('click', (e) => {
+  e.preventDefault();
+  isForgot = true;
+  document.getElementById('login-subtitle').textContent = '找回密码';
+  document.getElementById('login-username').style.display = 'none';
+  document.getElementById('login-only').style.display = 'none';
+  document.getElementById('forgot-panel').style.display = 'block';
+  document.getElementById('login-submit').textContent = '重置密码';
+  document.getElementById('reg-extra').style.display = 'none';
+  document.getElementById('auth-links').style.display = 'none';
+  document.getElementById('auth-back').style.display = '';
+  document.getElementById('login-error').style.display = 'none';
+  isRegistering = false;
+});
+
+document.getElementById('back-to-login').addEventListener('click', (e) => {
+  e.preventDefault();
+  isForgot = false;
+  document.getElementById('login-subtitle').textContent = '登录以管理你的设备';
+  document.getElementById('login-username').style.display = '';
+  document.getElementById('login-only').style.display = 'block';
+  document.getElementById('forgot-panel').style.display = 'none';
+  document.getElementById('login-submit').textContent = '登 录';
+  document.getElementById('auth-links').style.display = '';
+  document.getElementById('auth-back').style.display = 'none';
+  document.getElementById('login-error').style.display = 'none';
+});
+
+document.getElementById('forgot-send-btn').addEventListener('click', async () => {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { APP.toast('请输入邮箱'); return; }
+  const btn = document.getElementById('forgot-send-btn');
+  btn.disabled = true;
+  try {
+    const r = await api.request('POST', '/api/auth/forgot-send', { email });
+    if (r.error) { APP.toast(r.error); btn.disabled = false; return; }
+    APP.toast('验证码已发送');
+    let sec = 60;
+    btn.textContent = sec + 's';
+    const timer = setInterval(() => { sec--; btn.textContent = sec + 's'; if (sec <= 0) { clearInterval(timer); btn.textContent = '发送验证码'; btn.disabled = false; } }, 1000);
+  } catch { APP.toast('发送失败'); btn.disabled = false; }
+});
+
 document.getElementById('login-submit').addEventListener('click', async () => {
+  const errEl = document.getElementById('login-error');
+  // Forgot password flow
+  if (isForgot) {
+    const email = document.getElementById('forgot-email').value.trim();
+    const code = document.getElementById('forgot-code').value.trim();
+    const pw = document.getElementById('forgot-new-pw').value;
+    if (!email || !code || !pw) { errEl.textContent = '请填写完整'; errEl.style.display = 'block'; return; }
+    try {
+      const r = await api.request('POST', '/api/auth/forgot-reset', { email, code, password: pw });
+      if (r.error) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
+      errEl.style.color = 'green'; errEl.textContent = '密码已重置，请登录';
+      errEl.style.display = 'block';
+      document.getElementById('back-to-login').click();
+    } catch { errEl.textContent = '重置失败'; errEl.style.display = 'block'; }
+    return;
+  }
+
   const username = document.getElementById('login-username').value.trim();
   const passwordEl = isRegistering ? document.getElementById('login-password-reg') : document.getElementById('login-password');
   const password = passwordEl.value;

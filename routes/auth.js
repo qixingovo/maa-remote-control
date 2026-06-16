@@ -118,7 +118,34 @@ router.get('/check', (req, res) => {
   res.json({ authenticated: false });
 });
 
-// Change phone number
+// Forgot password - send reset code
+router.post('/forgot-send', rateLimit({ windowMs: 60*1000, max: 3, message: { error: '请稍后再试' } }), async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: '请输入邮箱' });
+  const db = require('../db');
+  const acct = db.prepare("SELECT id FROM accounts WHERE email = ? AND email != ''").get(email);
+  if (!acct) return res.status(400).json({ error: '该邮箱未注册' });
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  db.prepare("DELETE FROM verify_codes WHERE email = ? OR expires_at < datetime('now')").run(email);
+  db.prepare("INSERT INTO verify_codes (email, code, expires_at, created_at) VALUES (?, ?, datetime('now','+5 minutes'), datetime('now'))").run(email, code);
+  try {
+    await require('../modules/email').sendVerifyCode(email, code);
+    res.json({ success: true, message: '验证码已发送' });
+  } catch (e) { res.status(500).json({ error: '邮件发送失败' }); }
+});
+
+// Forgot password - reset
+router.post('/forgot-reset', rateLimit({ windowMs: 60*1000, max: 5 }), (req, res) => {
+  const { email, code, password } = req.body;
+  if (!email || !code || !password) return res.status(400).json({ error: '信息不完整' });
+  if (password.length < 6) return res.status(400).json({ error: '密码至少6位' });
+  const db = require('../db');
+  const vc = db.prepare("SELECT * FROM verify_codes WHERE email = ? AND code = ? AND expires_at > datetime('now') AND used = 0").get(email, code);
+  if (!vc) return res.status(400).json({ error: '验证码错误或已过期' });
+  db.prepare('UPDATE verify_codes SET used = 1 WHERE id = ?').run(vc.id);
+  account.changePassword(null, password, email);
+  res.json({ success: true, message: '密码已重置，请登录' });
+});
 router.post('/change-phone', (req, res) => {
   const acct = auth.getAccount(req);
   if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });

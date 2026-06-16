@@ -23,6 +23,15 @@
             <input type="checkbox" id="login-remember"> 记住我
           </label>
         </div>
+        <div id="forgot-panel" style="display:none">
+          <p style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:12px">输入注册邮箱，发送重置验证码</p>
+          <div style="display:flex;gap:8px">
+            <input type="email" id="forgot-email" placeholder="注册邮箱" style="flex:1">
+            <button class="secondary sm" id="forgot-send-btn" style="white-space:nowrap;min-width:90px">发送验证码</button>
+          </div>
+          <input type="text" id="forgot-code" placeholder="验证码">
+          <input type="password" id="forgot-new-pw" placeholder="新密码">
+        </div>
         <div id="reg-extra" style="display:none">
           <div style="display:flex;gap:8px">
             <input type="email" id="reg-email" placeholder="邮箱" autocomplete="email" style="flex:1">
@@ -35,7 +44,14 @@
         <button id="login-submit">登 录</button>
         <p id="login-error" style="color:#d93025;display:none;font-size:13px;text-align:center;margin-top:8px"></p>
         <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">
-          <a href="#" id="toggle-reg" style="color:var(--accent);text-decoration:none">注册新账号</a>
+          <span id="auth-links">
+            <a href="#" id="toggle-reg" style="color:var(--accent);text-decoration:none">注册新账号</a>
+            &nbsp;·&nbsp;
+            <a href="#" id="forgot-pw" style="color:var(--accent);text-decoration:none">忘记密码</a>
+          </span>
+          <span id="auth-back" style="display:none">
+            <a href="#" id="back-to-login" style="color:var(--accent);text-decoration:none">返回登录</a>
+          </span>
         </p>
       </div>
     </div>

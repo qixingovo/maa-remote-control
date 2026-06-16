@@ -74,9 +74,13 @@ function rotateMaaUserId(id) {
   return { maa_user_id: newId };
 }
 
-function changePassword(id, newPassword) {
+function changePassword(id, newPassword, email) {
   const hash = bcrypt.hashSync(newPassword, 10);
-  db.prepare('UPDATE accounts SET password_hash = ? WHERE id = ?').run(hash, id);
+  if (id !== null && id !== undefined) {
+    db.prepare('UPDATE accounts SET password_hash = ? WHERE id = ?').run(hash, id);
+  } else if (email) {
+    db.prepare("UPDATE accounts SET password_hash = ? WHERE email = ? AND email != ''").run(hash, email);
+  }
 }
 
 function changePhone(id, newPhone) {
