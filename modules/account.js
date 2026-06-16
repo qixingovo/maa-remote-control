@@ -14,12 +14,16 @@ function createAccount(username, password, phone, email, role = 'user') {
     if (emailExists) return { error: '该邮箱已被注册' };
   }
 
+  // First account is auto-admin + auto-approved
+  const total = db.prepare('SELECT COUNT(*) as c FROM accounts').get().c;
+  if (total === 0) { role = 'admin'; }
+
   const maaUserId = uuidv4().replace(/-/g, '').substring(0, 12);
   const passwordHash = bcrypt.hashSync(password, 10);
 
   db.prepare(
-    "INSERT INTO accounts (username, password_hash, phone, email, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
-  ).run(username, passwordHash, phone || '', email || '', maaUserId, role);
+    "INSERT INTO accounts (username, password_hash, phone, email, maa_user_id, role, approved, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))"
+  ).run(username, passwordHash, phone || '', email || '', maaUserId, role, role === 'admin' ? 1 : 0);
 
   return db.prepare('SELECT id, username, email, phone, email_verified, approved, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
 }

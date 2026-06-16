@@ -100,15 +100,6 @@ router.post('/login', (req, res) => {
     }
   }
 
-  // Legacy password fallback
-  if (config.adminPassword && password === config.adminPassword) {
-    req.session.regenerate(() => {
-      req.session.authenticated = true;
-      res.json({ authenticated: true, username: 'admin', role: 'admin' });
-    });
-    return;
-  }
-
   res.status(401).json({ error: '用户名或密码错误' });
 });
 
@@ -120,12 +111,10 @@ router.post('/logout', (req, res) => {
 
 // Check auth status
 router.get('/check', (req, res) => {
-  if (!config.adminPassword) return res.json({ authenticated: true, role: 'admin' });
   if (req.session.accountId) {
     const acct = account.getById(req.session.accountId);
     if (acct) return res.json({ authenticated: true, username: acct.username, email: acct.email, phone: acct.phone, email_verified: acct.email_verified, approved: acct.approved, maa_user_id: acct.maa_user_id, role: acct.role });
   }
-  if (req.session.authenticated) return res.json({ authenticated: true, username: 'admin', role: 'admin' });
   res.json({ authenticated: false });
 });
 
@@ -159,17 +148,15 @@ router.post('/approve/:id', (req, res) => {
 
 // List accounts (admin only)
 router.get('/accounts', (req, res) => {
-  if (!req.session.authenticated && (!req.session.accountId || account.getById(req.session.accountId)?.role !== 'admin')) {
-    return res.status(403).json({ error: '无权限' });
-  }
+  const adminAcct = auth.getAccount(req);
+  if (!adminAcct || adminAcct.role !== 'admin') return res.status(403).json({ error: '无权限' });
   res.json({ accounts: account.listAll() });
 });
 
 // Delete account (admin only)
 router.delete('/accounts/:id', (req, res) => {
-  if (!req.session.authenticated && (!req.session.accountId || account.getById(req.session.accountId)?.role !== 'admin')) {
-    return res.status(403).json({ error: '无权限' });
-  }
+  const adminAcct = auth.getAccount(req);
+  if (!adminAcct || adminAcct.role !== 'admin') return res.status(403).json({ error: '无权限' });
   const ok = account.deleteAccount(parseInt(req.params.id));
   res.json({ deleted: ok });
 });
