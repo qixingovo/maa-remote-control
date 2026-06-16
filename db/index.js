@@ -16,10 +16,13 @@ const devCols = db.prepare("PRAGMA table_info(devices)").all().map(c => c.name);
 if (devCols.length > 0 && !devCols.includes('account_id')) {
   db.exec("ALTER TABLE devices ADD COLUMN account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL");
 }
-// Migration: add phone column to accounts
+// Migration: add columns to accounts
 const accCols = db.prepare("PRAGMA table_info(accounts)").all().map(c => c.name);
-if (accCols.length > 0 && !accCols.includes('phone')) {
-  db.exec("ALTER TABLE accounts ADD COLUMN phone TEXT NOT NULL DEFAULT ''");
+if (accCols.length > 0) {
+  if (!accCols.includes('phone')) db.exec("ALTER TABLE accounts ADD COLUMN phone TEXT NOT NULL DEFAULT ''");
+  if (!accCols.includes('email')) db.exec("ALTER TABLE accounts ADD COLUMN email TEXT NOT NULL DEFAULT ''");
+  if (!accCols.includes('email_verified')) db.exec("ALTER TABLE accounts ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
+  if (!accCols.includes('approved')) db.exec("ALTER TABLE accounts ADD COLUMN approved INTEGER NOT NULL DEFAULT 0");
 }
 
 module.exports = db;

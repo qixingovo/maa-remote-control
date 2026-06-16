@@ -5,9 +5,21 @@ CREATE TABLE IF NOT EXISTS accounts (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     username        TEXT    NOT NULL UNIQUE,
     password_hash   TEXT    NOT NULL,
+    email           TEXT    NOT NULL DEFAULT '',
     phone           TEXT    NOT NULL DEFAULT '',
     maa_user_id     TEXT    NOT NULL UNIQUE,
+    email_verified  INTEGER NOT NULL DEFAULT 0,
+    approved        INTEGER NOT NULL DEFAULT 0,
     role            TEXT    NOT NULL DEFAULT 'user' CHECK(role IN ('admin','user')),
+    created_at      TEXT    NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS verify_codes (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    email           TEXT    NOT NULL,
+    code            TEXT    NOT NULL,
+    expires_at      TEXT    NOT NULL,
+    used            INTEGER NOT NULL DEFAULT 0,
     created_at      TEXT    NOT NULL DEFAULT ''
 );
 

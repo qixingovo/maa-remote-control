@@ -23,22 +23,58 @@ router.use('/register', rateLimit({
   message: { error: '注册太频繁，请稍后再试' },
 }));
 
-// Register new account
+// Send email verification code
+router.post('/send-code', rateLimit({ windowMs: 60*1000, max: 3, message: { error: '请稍后再试' } }), async (req, res) => {
+  const { email } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: '请输入正确的邮箱' });
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const db = require('../db');
+  db.prepare("DELETE FROM verify_codes WHERE email = ? OR expires_at < datetime('now')").run(email);
+  db.prepare("INSERT INTO verify_codes (email, code, expires_at, created_at) VALUES (?, ?, datetime('now','+5 minutes'), datetime('now'))").run(email, code);
+  try {
+    await require('../modules/email').sendVerifyCode(email, code);
+    res.json({ success: true, message: '验证码已发送' });
+  } catch (e) {
+    console.error('[send-code]', e.message);
+    res.status(500).json({ error: '邮件发送失败，请检查SMTP配置' });
+  }
+});
+
+// Register new account (email + password)
 router.post('/register', (req, res) => {
-  const { username, password, phone } = req.body;
-  if (!username || !password || !phone) return res.status(400).json({ error: '用户名、密码和手机号不能为空' });
+  const { username, password, email, code } = req.body;
+  if (!username || !password || !email) return res.status(400).json({ error: '用户名、密码和邮箱不能为空' });
   if (!/^[a-zA-Z0-9_\u4e00-\u9fff]{2,20}$/.test(username)) return res.status(400).json({ error: '用户名2-20位，仅支持中英文数字下划线' });
   if (password.length < 6) return res.status(400).json({ error: '密码至少6位' });
-  if (!/^1[3-9]\d{9}$/.test(phone)) return res.status(400).json({ error: '请输入正确的手机号' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: '请输入正确的邮箱' });
 
-  const result = account.createAccount(username, password, phone);
+  // Verify email code
+  const db = require('../db');
+  const vc = db.prepare("SELECT * FROM verify_codes WHERE email = ? AND code = ? AND expires_at > datetime('now') AND used = 0").get(email, code);
+  if (!vc) return res.status(400).json({ error: '验证码错误或已过期' });
+  db.prepare('UPDATE verify_codes SET used = 1 WHERE id = ?').run(vc.id);
+
+  const result = account.createAccount(username, password, '', email);
   if (result.error) return res.status(400).json({ error: result.error });
+  account.verifyEmail(result.id);
 
   res.status(201).json({
     username: result.username,
     maa_user_id: result.maa_user_id,
-    message: '注册成功！在MAA用户标识符中填入上面的 maa_user_id'
+    approved: result.approved,
+    message: '注册成功！等待管理员审核通过后即可使用。'
   });
+});
+
+// Account registration: add phone later (optional)
+router.post('/bind-phone', (req, res) => {
+  const acct = auth.getAccount(req);
+  if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });
+  const { phone } = req.body;
+  if (!phone || !/^1[3-9]\d{9}$/.test(phone)) return res.status(400).json({ error: '请输入正确的手机号' });
+  const result = account.changePhone(acct.id, phone);
+  if (result.error) return res.status(400).json({ error: result.error });
+  res.json({ success: true });
 });
 
 // Login
@@ -51,13 +87,14 @@ router.post('/login', (req, res) => {
     req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
   }
 
-  // Try account login (username or phone)
+  // Try account login (username/phone/email)
   if (loginId) {
     const acct = account.verifyLogin(loginId, password);
     if (acct) {
+      if (!acct.approved && acct.role !== 'admin') return res.status(403).json({ error: '账号尚未通过审核，请联系管理员' });
       req.session.regenerate(() => {
         req.session.accountId = acct.id;
-        res.json({ authenticated: true, username: acct.username, phone: acct.phone, maa_user_id: acct.maa_user_id, role: acct.role });
+        res.json({ authenticated: true, username: acct.username, email: acct.email, phone: acct.phone, maa_user_id: acct.maa_user_id, role: acct.role, approved: acct.approved });
       });
       return;
     }
@@ -86,7 +123,7 @@ router.get('/check', (req, res) => {
   if (!config.adminPassword) return res.json({ authenticated: true, role: 'admin' });
   if (req.session.accountId) {
     const acct = account.getById(req.session.accountId);
-    if (acct) return res.json({ authenticated: true, username: acct.username, phone: acct.phone, maa_user_id: acct.maa_user_id, role: acct.role });
+    if (acct) return res.json({ authenticated: true, username: acct.username, email: acct.email, phone: acct.phone, email_verified: acct.email_verified, approved: acct.approved, maa_user_id: acct.maa_user_id, role: acct.role });
   }
   if (req.session.authenticated) return res.json({ authenticated: true, username: 'admin', role: 'admin' });
   res.json({ authenticated: false });
@@ -110,6 +147,14 @@ router.post('/rotate-maa-id', (req, res) => {
   const result = account.rotateMaaUserId(acct.id);
   if (result.error) return res.status(400).json({ error: result.error });
   res.json({ maa_user_id: result.maa_user_id });
+});
+
+// Approve account (admin only)
+router.post('/approve/:id', (req, res) => {
+  const adminAcct = auth.getAccount(req);
+  if (!adminAcct || adminAcct.role !== 'admin') return res.status(403).json({ error: '无权限' });
+  account.approveAccount(parseInt(req.params.id));
+  res.json({ success: true });
 });
 
 // List accounts (admin only)

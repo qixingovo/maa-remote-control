@@ -2,37 +2,51 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 
-function createAccount(username, password, phone, role = 'user') {
+function createAccount(username, password, phone, email, role = 'user') {
   const existing = db.prepare('SELECT id FROM accounts WHERE username = ?').get(username);
   if (existing) return { error: '用户名已存在' };
   if (phone) {
     const phoneExists = db.prepare("SELECT id FROM accounts WHERE phone = ? AND phone != ''").get(phone);
     if (phoneExists) return { error: '该手机号已被注册' };
   }
+  if (email) {
+    const emailExists = db.prepare("SELECT id FROM accounts WHERE email = ? AND email != ''").get(email);
+    if (emailExists) return { error: '该邮箱已被注册' };
+  }
 
   const maaUserId = uuidv4().replace(/-/g, '').substring(0, 12);
   const passwordHash = bcrypt.hashSync(password, 10);
 
   db.prepare(
-    "INSERT INTO accounts (username, password_hash, phone, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))"
-  ).run(username, passwordHash, phone || '', maaUserId, role);
+    "INSERT INTO accounts (username, password_hash, phone, email, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
+  ).run(username, passwordHash, phone || '', email || '', maaUserId, role);
 
-  return db.prepare('SELECT id, username, phone, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
+  return db.prepare('SELECT id, username, email, phone, email_verified, approved, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
 }
 
 function verifyLogin(login, password) {
-  // Try username first, then phone
   let account = db.prepare('SELECT * FROM accounts WHERE username = ?').get(login);
-  if (!account) {
-    account = db.prepare("SELECT * FROM accounts WHERE phone = ? AND phone != ''").get(login);
-  }
+  if (!account) account = db.prepare("SELECT * FROM accounts WHERE phone = ? AND phone != ''").get(login);
+  if (!account) account = db.prepare("SELECT * FROM accounts WHERE email = ? AND email != ''").get(login);
   if (!account) return null;
   if (!bcrypt.compareSync(password, account.password_hash)) return null;
-  return { id: account.id, username: account.username, phone: account.phone, maa_user_id: account.maa_user_id, role: account.role };
+  return {
+    id: account.id, username: account.username, email: account.email, phone: account.phone,
+    email_verified: account.email_verified, approved: account.approved,
+    maa_user_id: account.maa_user_id, role: account.role
+  };
 }
 
 function getById(id) {
-  return db.prepare('SELECT id, username, phone, maa_user_id, role, created_at FROM accounts WHERE id = ?').get(id);
+  return db.prepare('SELECT id, username, email, phone, email_verified, approved, maa_user_id, role, created_at FROM accounts WHERE id = ?').get(id);
+}
+
+function verifyEmail(id) {
+  db.prepare('UPDATE accounts SET email_verified = 1 WHERE id = ?').run(id);
+}
+
+function approveAccount(id) {
+  db.prepare('UPDATE accounts SET approved = 1 WHERE id = ?').run(id);
 }
 
 function getByMaaUserId(maaUserId) {
@@ -69,4 +83,4 @@ function changePhone(id, newPhone) {
   return { success: true };
 }
 
-module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword, changePhone };
+module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword, changePhone, verifyEmail, approveAccount };

@@ -99,8 +99,14 @@ const APP = {
     document.getElementById('my-logout-btn').style.display = loggedIn ? '' : 'none';
     if (loggedIn) {
       document.getElementById('my-username').textContent = this.account.username;
-      document.getElementById('my-phone').textContent = this.account.phone || '未绑定';
+      document.getElementById('my-phone').textContent = this.account.email || '未绑定';
       document.getElementById('my-maa-id').textContent = this.account.maa_user_id || '-';
+      // Show approval status
+      const statusEl = document.getElementById('my-approval-status');
+      if (statusEl) {
+        statusEl.textContent = this.account.approved ? '已审核' : '待审核';
+        statusEl.style.color = this.account.approved ? '#0d904f' : '#e37400';
+      }
     }
   },
 
@@ -172,6 +178,22 @@ const APP = {
 // Auth state
 let isRegistering = false;
 
+// Send verification code
+document.getElementById('send-code-btn').addEventListener('click', async () => {
+  const email = document.getElementById('reg-email').value.trim();
+  if (!email) { APP.toast('请先输入邮箱'); return; }
+  const btn = document.getElementById('send-code-btn');
+  btn.disabled = true;
+  try {
+    const r = await api.sendCode(email);
+    if (r.error) { APP.toast(r.error); btn.disabled = false; return; }
+    APP.toast('验证码已发送');
+    let sec = 60;
+    btn.textContent = sec + 's';
+    const timer = setInterval(() => { sec--; btn.textContent = sec + 's'; if (sec <= 0) { clearInterval(timer); btn.textContent = '发送验证码'; btn.disabled = false; } }, 1000);
+  } catch { APP.toast('发送失败'); btn.disabled = false; }
+});
+
 document.getElementById('toggle-reg').addEventListener('click', (e) => {
   e.preventDefault();
   isRegistering = !isRegistering;
@@ -189,15 +211,18 @@ document.getElementById('login-submit').addEventListener('click', async () => {
   const errEl = document.getElementById('login-error');
 
   if (isRegistering) {
-    const phone = document.getElementById('reg-phone').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const code = document.getElementById('reg-code').value.trim();
     const confirm = document.getElementById('reg-confirm').value;
-    if (!phone) { errEl.textContent = '请输入手机号'; errEl.style.display = 'block'; return; }
+    if (!email) { errEl.textContent = '请输入邮箱'; errEl.style.display = 'block'; return; }
+    if (!code) { errEl.textContent = '请输入验证码'; errEl.style.display = 'block'; return; }
     if (password !== confirm) { errEl.textContent = '两次密码不一致'; errEl.style.display = 'block'; return; }
-    const r = await api.register(username, password, phone);
+    const r = await api.register(username, password, email, code);
     if (r.error) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
-    errEl.style.color = 'green'; errEl.textContent = '注册成功！MAA标识符: ' + r.maa_user_id; errEl.style.display = 'block';
+    errEl.style.color = 'green'; errEl.textContent = '注册成功！等待管理员审核通过后即可使用。'; errEl.style.display = 'block';
     isRegistering = false;
-    document.getElementById('reg-phone').value = '';
+    document.getElementById('reg-email').value = '';
+    document.getElementById('reg-code').value = '';
     document.getElementById('login-submit').textContent = '登录';
     document.getElementById('reg-extra').style.display = 'none';
     document.getElementById('toggle-reg').textContent = '注册新账号';

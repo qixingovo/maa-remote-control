@@ -16,10 +16,14 @@
           <h1 style="font-size:20px;font-weight:700;color:var(--text)">MAA 远程控制</h1>
           <p style="color:var(--text-secondary);font-size:13px;margin-top:4px" id="login-subtitle">登录以管理你的设备</p>
         </div>
-        <input type="text" id="login-username" placeholder="用户名 / 手机号" autocomplete="username">
+        <input type="text" id="login-username" placeholder="用户名 / 手机号 / 邮箱" autocomplete="username">
         <input type="password" id="login-password" placeholder="密码" autocomplete="current-password">
         <div id="reg-extra" style="display:none">
-          <input type="tel" id="reg-phone" placeholder="手机号" autocomplete="tel">
+          <div style="display:flex;gap:8px">
+            <input type="email" id="reg-email" placeholder="邮箱" autocomplete="email" style="flex:1">
+            <button class="secondary sm" id="send-code-btn" style="white-space:nowrap;min-width:90px">发送验证码</button>
+          </div>
+          <input type="text" id="reg-code" placeholder="邮箱验证码">
           <input type="password" id="reg-confirm" placeholder="确认密码">
         </div>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);margin-bottom:12px;cursor:pointer">
@@ -248,11 +252,11 @@
           <div style="text-align:center;padding:4px 0 16px">
             <div style="font-size:48px;margin-bottom:8px">&#128100;</div>
             <h2 id="my-username" style="margin-bottom:4px"></h2>
-            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:4px">绑定手机号</p>
-            <p style="margin-bottom:12px;display:flex;gap:8px;justify-content:center;align-items:center">
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:4px">绑定邮箱</p>
+            <p style="margin-bottom:4px">
               <span id="my-phone" style="font-size:16px;font-weight:600"></span>
-              <button class="secondary sm" onclick="APP.changePhone()">修改</button>
             </p>
+            <p style="color:var(--text-secondary);font-size:11px;margin-bottom:8px">审核状态: <span id="my-approval-status">-</span></p>
             <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">MAA 标识符</p>
             <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:8px">
               <code id="my-maa-id" style="font-size:18px;font-weight:700;background:var(--bg);padding:8px 16px;border-radius:8px"></code>
