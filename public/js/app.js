@@ -48,6 +48,17 @@ const APP = {
     if (tab === 'my') this.renderMyPage();
   },
 
+  async bindEmail() {
+    const email = prompt('请输入邮箱地址:');
+    if (!email) return;
+    try {
+      const r = await api.request('POST', '/api/auth/bind-email', { email });
+      if (r.error) { APP.toast(r.error); return; }
+      APP.toast('邮箱已绑定');
+      APP.checkAuth();
+    } catch { APP.toast('绑定失败'); }
+  },
+
   async changePhone() {
     const phone = prompt('请输入新手机号:');
     if (!phone) return;

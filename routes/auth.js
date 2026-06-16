@@ -146,6 +146,17 @@ router.post('/forgot-reset', rateLimit({ windowMs: 60*1000, max: 5 }), (req, res
   account.changePassword(null, password, email);
   res.json({ success: true, message: '密码已重置，请登录' });
 });
+// Bind email
+router.post('/bind-email', (req, res) => {
+  const acct = auth.getAccount(req);
+  if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });
+  const { email } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: '请输入正确的邮箱' });
+  const result = account.changeEmail(acct.id, email);
+  if (result.error) return res.status(400).json({ error: result.error });
+  res.json({ success: true });
+});
+
 router.post('/change-phone', (req, res) => {
   const acct = auth.getAccount(req);
   if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });

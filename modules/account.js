@@ -83,6 +83,13 @@ function changePassword(id, newPassword, email) {
   }
 }
 
+function changeEmail(id, newEmail) {
+  const dup = db.prepare("SELECT id FROM accounts WHERE email = ? AND email != '' AND id != ?").get(newEmail, id);
+  if (dup) return { error: '该邮箱已被其他账号绑定' };
+  db.prepare('UPDATE accounts SET email = ?, email_verified = 1 WHERE id = ?').run(newEmail, id);
+  return { success: true };
+}
+
 function changePhone(id, newPhone) {
   if (!/^1[3-9]\d{9}$/.test(newPhone)) return { error: '手机号格式不正确' };
   const dup = db.prepare("SELECT id FROM accounts WHERE phone = ? AND phone != '' AND id != ?").get(newPhone, id);
@@ -91,4 +98,4 @@ function changePhone(id, newPhone) {
   return { success: true };
 }
 
-module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword, changePhone, verifyEmail, approveAccount };
+module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword, changePhone, changeEmail, verifyEmail, approveAccount };
