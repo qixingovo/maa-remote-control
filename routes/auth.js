@@ -43,16 +43,17 @@ router.post('/register', (req, res) => {
 
 // Login
 router.post('/login', (req, res) => {
-  const { username, password, remember } = req.body;
+  const { login, password, remember } = req.body;
+  const loginId = login || req.body.username; // backward compat
 
   // If "remember me" checked, extend session to 30 days
   if (remember) {
     req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
   }
 
-  // Try account login first
-  if (username) {
-    const acct = account.verifyLogin(username, password);
+  // Try account login (username or phone)
+  if (loginId) {
+    const acct = account.verifyLogin(loginId, password);
     if (acct) {
       req.session.regenerate(() => {
         req.session.accountId = acct.id;

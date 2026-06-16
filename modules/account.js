@@ -20,8 +20,12 @@ function createAccount(username, password, phone, role = 'user') {
   return db.prepare('SELECT id, username, phone, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
 }
 
-function verifyLogin(username, password) {
-  const account = db.prepare('SELECT * FROM accounts WHERE username = ?').get(username);
+function verifyLogin(login, password) {
+  // Try username first, then phone
+  let account = db.prepare('SELECT * FROM accounts WHERE username = ?').get(login);
+  if (!account) {
+    account = db.prepare("SELECT * FROM accounts WHERE phone = ? AND phone != ''").get(login);
+  }
   if (!account) return null;
   if (!bcrypt.compareSync(password, account.password_hash)) return null;
   return { id: account.id, username: account.username, maa_user_id: account.maa_user_id, role: account.role };

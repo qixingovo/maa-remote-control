@@ -12,7 +12,7 @@ const api = {
   },
 
   // Auth
-  login(username, password, remember) { return this.request('POST', '/api/auth/login', { username, password, remember }); },
+  login(login, password, remember) { return this.request('POST', '/api/auth/login', { login, password, remember }); },
   register(username, password, phone) { return this.request('POST', '/api/auth/register', { username, password, phone }); },
   logout() { return this.request('POST', '/api/auth/logout'); },
   checkAuth() { return this.request('GET', '/api/auth/check'); },
