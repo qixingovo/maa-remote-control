@@ -150,7 +150,7 @@ const TaskQueue = {
         <p><strong>类型:</strong> ${APP.taskTypeLabel(data.type)}</p>
         <p><strong>状态:</strong> <span class="badge ${data.status}">${data.status}</span></p>
         <p><strong>结果:</strong> <span class="badge ${result ? result.status : ''}">${result ? result.status : '无'}</span></p>`;
-      if (result && result.payload_text) html += `<p><strong>数据:</strong> ${result.payload_text}</p>`;
+      if (result && result.payload_text) html += `<p><strong>数据:</strong> ${APP.escapeHtml(result.payload_text)}</p>`;
       if (hasScreenshot) {
         const screenshotResult = data.results.find(r => r.payload_type === 'screenshot');
         html += `<p><strong>截图:</strong></p><img src="/api/screenshots/${screenshotResult.task_uuid}.png" style="max-width:100%;border-radius:4px;border:1px solid var(--border)">`;

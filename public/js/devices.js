@@ -22,17 +22,21 @@ const Devices = {
     }
     tbody.innerHTML = devices.map(d => {
       const isOnline = d.last_seen_at ? new Date() - new Date(d.last_seen_at + 'Z') < 30000 : false;
+      const safeName = APP.escapeHtml(d.name || '');
+      const safeEmu = APP.escapeHtml(d.emulator_type || '');
+      const safeEscName = safeName.replace(/'/g, "\\'");
+      const safeEscEmu = safeEmu.replace(/'/g, "\\'");
       return `
         <tr>
           <td><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span>${isOnline ? '在线' : '离线'}</td>
-          <td><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${(d.name||'').replace(/'/g,"\\'")}')" title="点击改名">${d.name || APP.truncate(d.device_uuid)}</span></td>
+          <td><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${safeEscName}')" title="点击改名">${safeName || APP.truncate(d.device_uuid)}</span></td>
           <td><code>${APP.truncate(d.device_uuid)}</code></td>
           <td><code>${APP.truncate(d.user_uuid)}</code></td>
-          <td>${d.emulator_type || '-'}</td>
+          <td>${safeEmu || '-'}</td>
           <td>${APP.timeAgo(d.last_seen_at)}</td>
           <td><span class="badge pending">${d.pending_count || 0}</span></td>
           <td>
-            <button class="secondary" onclick="Devices.showEditForm('${d.device_uuid}', '${(d.name || '').replace(/'/g, "\\'")}', '${(d.emulator_type || '').replace(/'/g, "\\'")}')">编辑</button>
+            <button class="secondary" onclick="Devices.showEditForm('${d.device_uuid}', '${safeEscName}', '${safeEscEmu}')">编辑</button>
             <button class="danger" onclick="Devices.confirmDelete('${d.device_uuid}')">删除</button>
           </td>
         </tr>
@@ -41,15 +45,17 @@ const Devices = {
     // Mobile cards
     cards.innerHTML = devices.map(d => {
       const isOnline = d.last_seen_at ? new Date() - new Date(d.last_seen_at + 'Z') < 30000 : false;
-      const escName = (d.name || '').replace(/'/g, "\\'");
-      const escEmu = (d.emulator_type || '').replace(/'/g, "\\'");
+      const safeName = APP.escapeHtml(d.name || '');
+      const safeEmu = APP.escapeHtml(d.emulator_type || '');
+      const escName = safeName.replace(/'/g, "\\'");
+      const escEmu = safeEmu.replace(/'/g, "\\'");
       return `
         <div class="card-item">
           <div class="card-row">
-            <span><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${escName}')">${d.name || APP.truncate(d.device_uuid)}</span></span>
+            <span><span class="online-dot ${isOnline ? 'online' : 'offline'}"></span><span class="editable-name" onclick="Devices.quickRename('${d.device_uuid}','${escName}')">${safeName || APP.truncate(d.device_uuid)}</span></span>
             <span class="badge ${isOnline ? 'completed' : 'cancelled'}">${isOnline ? '在线' : '离线'}</span>
           </div>
-          <div class="card-meta">${d.emulator_type || '未设置'} · ${APP.timeAgo(d.last_seen_at)}</div>
+          <div class="card-meta">${safeEmu || '未设置'} · ${APP.timeAgo(d.last_seen_at)}</div>
           <div class="card-actions">
             <button class="secondary" onclick="Devices.showEditForm('${d.device_uuid}', '${escName}', '${escEmu}')">编辑</button>
             <button class="danger" onclick="Devices.confirmDelete('${d.device_uuid}')">删除</button>

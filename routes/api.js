@@ -37,6 +37,8 @@ router.get('/devices/:uuid', (req, res) => {
 
 router.patch('/devices/:uuid', (req, res) => {
   const { name, emulator_type } = req.body;
+  if (name && name.length > 50) return res.status(400).json({ error: '设备名称不能超过50个字符' });
+  if (emulator_type && emulator_type.length > 30) return res.status(400).json({ error: '模拟器类型不能超过30个字符' });
   const device = deviceRegistry.updateDevice(req.params.uuid, { name, emulatorType: emulator_type });
   if (!device) return res.status(404).json({ error: 'Device not found' });
   res.json(device);

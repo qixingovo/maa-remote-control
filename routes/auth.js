@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const config = require('../config');
 const account = require('../modules/account');
 const auth = require('../middleware/auth');
@@ -6,11 +7,28 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 router.use(express.json());
 
+// Rate limit login: 10 attempts per minute per IP
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: '尝试次数过多，请1分钟后再试' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.use('/login', loginLimiter);
+router.use('/register', rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { error: '注册太频繁，请稍后再试' },
+}));
+
 // Register new account
 router.post('/register', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
-  if (username.length < 2 || password.length < 4) return res.status(400).json({ error: '用户名至少2位，密码至少4位' });
+  if (!/^[a-zA-Z0-9_\u4e00-\u9fff]{2,20}$/.test(username)) return res.status(400).json({ error: '用户名2-20位，仅支持中英文数字下划线' });
+  if (password.length < 6) return res.status(400).json({ error: '密码至少6位' });
 
   const result = account.createAccount(username, password);
   if (result.error) return res.status(400).json({ error: result.error });
@@ -35,15 +53,21 @@ router.post('/login', (req, res) => {
   if (username) {
     const acct = account.verifyLogin(username, password);
     if (acct) {
-      req.session.accountId = acct.id;
-      return res.json({ authenticated: true, username: acct.username, maa_user_id: acct.maa_user_id, role: acct.role });
+      req.session.regenerate(() => {
+        req.session.accountId = acct.id;
+        res.json({ authenticated: true, username: acct.username, maa_user_id: acct.maa_user_id, role: acct.role });
+      });
+      return;
     }
   }
 
   // Legacy password fallback
   if (config.adminPassword && password === config.adminPassword) {
-    req.session.authenticated = true;
-    return res.json({ authenticated: true, username: 'admin', role: 'admin' });
+    req.session.regenerate(() => {
+      req.session.authenticated = true;
+      res.json({ authenticated: true, username: 'admin', role: 'admin' });
+    });
+    return;
   }
 
   res.status(401).json({ error: '用户名或密码错误' });
