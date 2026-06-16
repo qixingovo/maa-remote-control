@@ -28,11 +28,11 @@ function verifyLogin(login, password) {
   }
   if (!account) return null;
   if (!bcrypt.compareSync(password, account.password_hash)) return null;
-  return { id: account.id, username: account.username, maa_user_id: account.maa_user_id, role: account.role };
+  return { id: account.id, username: account.username, phone: account.phone, maa_user_id: account.maa_user_id, role: account.role };
 }
 
 function getById(id) {
-  return db.prepare('SELECT id, username, maa_user_id, role, created_at FROM accounts WHERE id = ?').get(id);
+  return db.prepare('SELECT id, username, phone, maa_user_id, role, created_at FROM accounts WHERE id = ?').get(id);
 }
 
 function getByMaaUserId(maaUserId) {
@@ -61,4 +61,12 @@ function changePassword(id, newPassword) {
   db.prepare('UPDATE accounts SET password_hash = ? WHERE id = ?').run(hash, id);
 }
 
-module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword };
+function changePhone(id, newPhone) {
+  if (!/^1[3-9]\d{9}$/.test(newPhone)) return { error: '手机号格式不正确' };
+  const dup = db.prepare("SELECT id FROM accounts WHERE phone = ? AND phone != '' AND id != ?").get(newPhone, id);
+  if (dup) return { error: '该手机号已被其他账号绑定' };
+  db.prepare('UPDATE accounts SET phone = ? WHERE id = ?').run(newPhone, id);
+  return { success: true };
+}
+
+module.exports = { createAccount, verifyLogin, getById, getByMaaUserId, listAll, deleteAccount, rotateMaaUserId, changePassword, changePhone };

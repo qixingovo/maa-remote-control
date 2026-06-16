@@ -57,7 +57,7 @@ router.post('/login', (req, res) => {
     if (acct) {
       req.session.regenerate(() => {
         req.session.accountId = acct.id;
-        res.json({ authenticated: true, username: acct.username, maa_user_id: acct.maa_user_id, role: acct.role });
+        res.json({ authenticated: true, username: acct.username, phone: acct.phone, maa_user_id: acct.maa_user_id, role: acct.role });
       });
       return;
     }
@@ -86,10 +86,21 @@ router.get('/check', (req, res) => {
   if (!config.adminPassword) return res.json({ authenticated: true, role: 'admin' });
   if (req.session.accountId) {
     const acct = account.getById(req.session.accountId);
-    if (acct) return res.json({ authenticated: true, username: acct.username, maa_user_id: acct.maa_user_id, role: acct.role });
+    if (acct) return res.json({ authenticated: true, username: acct.username, phone: acct.phone, maa_user_id: acct.maa_user_id, role: acct.role });
   }
   if (req.session.authenticated) return res.json({ authenticated: true, username: 'admin', role: 'admin' });
   res.json({ authenticated: false });
+});
+
+// Change phone number
+router.post('/change-phone', (req, res) => {
+  const acct = auth.getAccount(req);
+  if (!acct || !acct.id) return res.status(401).json({ error: '请先登录' });
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: '请输入新手机号' });
+  const result = account.changePhone(acct.id, phone);
+  if (result.error) return res.status(400).json({ error: result.error });
+  res.json({ success: true });
 });
 
 // Regenerate MAA user ID

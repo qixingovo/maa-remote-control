@@ -48,6 +48,17 @@ const APP = {
     if (tab === 'my') this.renderMyPage();
   },
 
+  async changePhone() {
+    const phone = prompt('请输入新手机号:');
+    if (!phone) return;
+    try {
+      const r = await api.changePhone(phone);
+      if (r.error) { APP.toast(r.error); return; }
+      APP.toast('手机号已更新');
+      APP.checkAuth();
+    } catch { APP.toast('修改失败'); }
+  },
+
   async rotateMaaId() {
     if (!confirm('重新生成后旧标识符立即失效，MAA 需更新用户标识符。确认？')) return;
     try {
@@ -81,15 +92,14 @@ const APP = {
 
   updateUI() {
     const loggedIn = this.account && this.account.username;
-    // Top bar
     document.getElementById('user-info').textContent = loggedIn ? this.account.username : '未登录';
     document.getElementById('topbar-logout').style.display = loggedIn ? '' : 'none';
-    // My page
     document.getElementById('my-logged-out').style.display = loggedIn ? 'none' : '';
     document.getElementById('my-logged-in').style.display = loggedIn ? '' : 'none';
     document.getElementById('my-logout-btn').style.display = loggedIn ? '' : 'none';
     if (loggedIn) {
       document.getElementById('my-username').textContent = this.account.username;
+      document.getElementById('my-phone').textContent = this.account.phone || '未绑定';
       document.getElementById('my-maa-id').textContent = this.account.maa_user_id || '-';
     }
   },

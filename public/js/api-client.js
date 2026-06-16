@@ -17,6 +17,7 @@ const api = {
   logout() { return this.request('POST', '/api/auth/logout'); },
   checkAuth() { return this.request('GET', '/api/auth/check'); },
   rotateMaaId() { return this.request('POST', '/api/auth/rotate-maa-id'); },
+  changePhone(phone) { return this.request('POST', '/api/auth/change-phone', { phone }); },
 
   // Devices
   getDevices(onlineOnly) {
