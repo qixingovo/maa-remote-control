@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS accounts (
     role            TEXT    NOT NULL DEFAULT 'user' CHECK(role IN ('admin','user')),
     created_at      TEXT    NOT NULL DEFAULT ''
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_phone ON accounts(phone) WHERE phone != '';
 
 CREATE TABLE IF NOT EXISTS devices (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
