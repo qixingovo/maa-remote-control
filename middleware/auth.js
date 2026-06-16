@@ -7,7 +7,7 @@ function apiGuard(req, res, next) {
   if (req.session && req.session.accountId) return next();
   // Legacy password auth fallback
   if (config.adminPassword && req.session && req.session.authenticated) return next();
-  if (req.path === '/auth/login' || req.path === '/auth/register' || req.path === '/auth/check') return next();
+  if (['/auth/login', '/auth/register', '/auth/check', '/auth/send-code'].includes(req.path)) return next();
   res.status(401).json({ error: '请登录' });
 }
 
