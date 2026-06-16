@@ -2,18 +2,22 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 
-function createAccount(username, password, role = 'user') {
+function createAccount(username, password, phone, role = 'user') {
   const existing = db.prepare('SELECT id FROM accounts WHERE username = ?').get(username);
   if (existing) return { error: '用户名已存在' };
+  if (phone) {
+    const phoneExists = db.prepare("SELECT id FROM accounts WHERE phone = ? AND phone != ''").get(phone);
+    if (phoneExists) return { error: '该手机号已被注册' };
+  }
 
   const maaUserId = uuidv4().replace(/-/g, '').substring(0, 12);
   const passwordHash = bcrypt.hashSync(password, 10);
 
   db.prepare(
-    "INSERT INTO accounts (username, password_hash, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
-  ).run(username, passwordHash, maaUserId, role);
+    "INSERT INTO accounts (username, password_hash, phone, maa_user_id, role, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))"
+  ).run(username, passwordHash, phone || '', maaUserId, role);
 
-  return db.prepare('SELECT id, username, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
+  return db.prepare('SELECT id, username, phone, maa_user_id, role, created_at FROM accounts WHERE username = ?').get(username);
 }
 
 function verifyLogin(username, password) {

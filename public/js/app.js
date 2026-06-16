@@ -179,13 +179,15 @@ document.getElementById('login-submit').addEventListener('click', async () => {
   const errEl = document.getElementById('login-error');
 
   if (isRegistering) {
+    const phone = document.getElementById('reg-phone').value.trim();
     const confirm = document.getElementById('reg-confirm').value;
+    if (!phone) { errEl.textContent = '请输入手机号'; errEl.style.display = 'block'; return; }
     if (password !== confirm) { errEl.textContent = '两次密码不一致'; errEl.style.display = 'block'; return; }
-    const r = await api.register(username, password);
+    const r = await api.register(username, password, phone);
     if (r.error) { errEl.textContent = r.error; errEl.style.display = 'block'; return; }
     errEl.style.color = 'green'; errEl.textContent = '注册成功！MAA标识符: ' + r.maa_user_id; errEl.style.display = 'block';
     isRegistering = false;
-    document.getElementById('auth-title').textContent = '登录';
+    document.getElementById('reg-phone').value = '';
     document.getElementById('login-submit').textContent = '登录';
     document.getElementById('reg-extra').style.display = 'none';
     document.getElementById('toggle-reg').textContent = '注册新账号';

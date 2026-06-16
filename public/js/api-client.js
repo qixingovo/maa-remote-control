@@ -13,7 +13,7 @@ const api = {
 
   // Auth
   login(username, password, remember) { return this.request('POST', '/api/auth/login', { username, password, remember }); },
-  register(username, password) { return this.request('POST', '/api/auth/register', { username, password }); },
+  register(username, password, phone) { return this.request('POST', '/api/auth/register', { username, password, phone }); },
   logout() { return this.request('POST', '/api/auth/logout'); },
   checkAuth() { return this.request('GET', '/api/auth/check'); },
   rotateMaaId() { return this.request('POST', '/api/auth/rotate-maa-id'); },

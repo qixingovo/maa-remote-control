@@ -25,12 +25,13 @@ router.use('/register', rateLimit({
 
 // Register new account
 router.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
+  const { username, password, phone } = req.body;
+  if (!username || !password || !phone) return res.status(400).json({ error: '用户名、密码和手机号不能为空' });
   if (!/^[a-zA-Z0-9_\u4e00-\u9fff]{2,20}$/.test(username)) return res.status(400).json({ error: '用户名2-20位，仅支持中英文数字下划线' });
   if (password.length < 6) return res.status(400).json({ error: '密码至少6位' });
+  if (!/^1[3-9]\d{9}$/.test(phone)) return res.status(400).json({ error: '请输入正确的手机号' });
 
-  const result = account.createAccount(username, password);
+  const result = account.createAccount(username, password, phone);
   if (result.error) return res.status(400).json({ error: result.error });
 
   res.status(201).json({

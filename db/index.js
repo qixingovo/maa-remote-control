@@ -16,5 +16,11 @@ const devCols = db.prepare("PRAGMA table_info(devices)").all().map(c => c.name);
 if (devCols.length > 0 && !devCols.includes('account_id')) {
   db.exec("ALTER TABLE devices ADD COLUMN account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL");
 }
+// Migration: add phone column to accounts
+const accCols = db.prepare("PRAGMA table_info(accounts)").all().map(c => c.name);
+if (accCols.length > 0 && !accCols.includes('phone')) {
+  db.exec("ALTER TABLE accounts ADD COLUMN phone TEXT NOT NULL DEFAULT ''");
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_phone ON accounts(phone) WHERE phone != ''");
+}
 
 module.exports = db;
