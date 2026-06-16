@@ -54,7 +54,7 @@ function getByMaaUserId(maaUserId) {
 }
 
 function listAll() {
-  return db.prepare('SELECT id, username, maa_user_id, role, created_at FROM accounts ORDER BY created_at DESC').all();
+  return db.prepare('SELECT id, username, email, approved, maa_user_id, role, created_at FROM accounts ORDER BY created_at DESC').all();
 }
 
 function deleteAccount(id) {
