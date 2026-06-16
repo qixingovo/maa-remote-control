@@ -241,14 +241,16 @@ document.getElementById('toggle-reg').addEventListener('click', (e) => {
   document.getElementById('login-subtitle').textContent = isRegistering ? '注册新账号' : '登录以管理你的设备';
   document.getElementById('login-submit').textContent = isRegistering ? '注册' : '登录';
   document.getElementById('reg-extra').style.display = isRegistering ? 'block' : 'none';
+  document.getElementById('login-only').style.display = isRegistering ? 'none' : 'block';
+  document.getElementById('login-username').placeholder = isRegistering ? '用户名' : '用户名 / 邮箱';
   document.getElementById('toggle-reg').textContent = isRegistering ? '已有账号？登录' : '注册新账号';
-  document.getElementById('login-username').style.display = 'block';
   document.getElementById('login-error').style.display = 'none';
 });
 
 document.getElementById('login-submit').addEventListener('click', async () => {
   const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
+  const passwordEl = isRegistering ? document.getElementById('login-password-reg') : document.getElementById('login-password');
+  const password = passwordEl.value;
   const errEl = document.getElementById('login-error');
 
   if (isRegistering) {
@@ -264,8 +266,12 @@ document.getElementById('login-submit').addEventListener('click', async () => {
     isRegistering = false;
     document.getElementById('reg-email').value = '';
     document.getElementById('reg-code').value = '';
+    document.getElementById('login-password-reg').value = '';
+    document.getElementById('reg-confirm').value = '';
     document.getElementById('login-submit').textContent = '登录';
     document.getElementById('reg-extra').style.display = 'none';
+    document.getElementById('login-only').style.display = 'block';
+    document.getElementById('login-username').placeholder = '用户名 / 邮箱';
     document.getElementById('toggle-reg').textContent = '注册新账号';
     document.getElementById('login-subtitle').textContent = '登录以管理你的设备';
     return;

@@ -16,19 +16,22 @@
           <h1 style="font-size:20px;font-weight:700;color:var(--text)">MAA 远程控制</h1>
           <p style="color:var(--text-secondary);font-size:13px;margin-top:4px" id="login-subtitle">登录以管理你的设备</p>
         </div>
-        <input type="text" id="login-username" placeholder="用户名 / 手机号 / 邮箱" autocomplete="username">
-        <input type="password" id="login-password" placeholder="密码" autocomplete="current-password">
+        <input type="text" id="login-username" placeholder="用户名 / 邮箱" autocomplete="username">
+        <div id="login-only">
+          <input type="password" id="login-password" placeholder="密码" autocomplete="current-password">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);margin-bottom:12px;cursor:pointer">
+            <input type="checkbox" id="login-remember"> 记住我
+          </label>
+        </div>
         <div id="reg-extra" style="display:none">
           <div style="display:flex;gap:8px">
             <input type="email" id="reg-email" placeholder="邮箱" autocomplete="email" style="flex:1">
             <button class="secondary sm" id="send-code-btn" style="white-space:nowrap;min-width:90px">发送验证码</button>
           </div>
           <input type="text" id="reg-code" placeholder="邮箱验证码">
+          <input type="password" id="login-password-reg" placeholder="密码">
           <input type="password" id="reg-confirm" placeholder="确认密码">
         </div>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);margin-bottom:12px;cursor:pointer">
-          <input type="checkbox" id="login-remember"> 记住我
-        </label>
         <button id="login-submit">登 录</button>
         <p id="login-error" style="color:#d93025;display:none;font-size:13px;text-align:center;margin-top:8px"></p>
         <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary)">
