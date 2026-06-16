@@ -36,7 +36,7 @@ const TaskQueue = {
 
   async refresh() {
     try { await this.loadDevices(); } catch {}
-    if (this.currentSub === 'queue') await this.loadTasks();
+    await this.loadTasks();
   },
 
   async loadDevices() {
