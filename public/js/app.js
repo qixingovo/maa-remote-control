@@ -101,7 +101,11 @@ const APP = {
       document.getElementById('my-username').textContent = this.account.username;
       document.getElementById('my-phone').textContent = this.account.email || '未绑定';
       document.getElementById('my-maa-id').textContent = this.account.maa_user_id || '-';
-      // Show approval status
+      // Admin panel
+      if (this.account.role === 'admin') {
+        document.getElementById('admin-panel').style.display = '';
+        this.loadAdminUsers();
+      }
       const statusEl = document.getElementById('my-approval-status');
       if (statusEl) {
         statusEl.textContent = this.account.approved ? '已审核' : '待审核';
@@ -131,6 +135,43 @@ const APP = {
     document.getElementById('modal-overlay').onclick = function(e) {
       if (e.target === this) APP.closeModal();
     };
+  },
+
+  async loadAdminUsers() {
+    try {
+      const r = await api.request('GET', '/api/auth/accounts');
+      const users = r.accounts || [];
+      document.getElementById('user-list').innerHTML = users.map(u => `
+        <div class="card-item">
+          <div class="card-row">
+            <span><strong>${this.escapeHtml(u.username)}</strong> <span class="badge ${u.role === 'admin' ? 'completed' : 'cancelled'}">${u.role}</span></span>
+            ${u.approved ? '<span class="badge SUCCESS">已审核</span>' : '<span class="badge pending">待审核</span>'}
+          </div>
+          <div class="card-meta">${u.maa_user_id} · ${u.created_at || ''}</div>
+          <div class="card-actions">
+            ${!u.approved ? `<button class="sm" onclick="APP.approveUser(${u.id})">通过审核</button>` : ''}
+            ${u.role !== 'admin' ? `<button class="danger" onclick="APP.deleteUser(${u.id})">删除</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    } catch { /* */ }
+  },
+
+  async approveUser(id) {
+    try {
+      await api.request('POST', '/api/auth/approve/' + id);
+      APP.toast('已通过审核');
+      this.loadAdminUsers();
+    } catch { APP.toast('操作失败'); }
+  },
+
+  async deleteUser(id) {
+    if (!confirm('确认删除此用户？所有关联设备将被解绑。')) return;
+    try {
+      await api.request('DELETE', '/api/auth/accounts/' + id);
+      APP.toast('已删除');
+      this.loadAdminUsers();
+    } catch { APP.toast('操作失败'); }
   },
 
   renderMyPage() {
