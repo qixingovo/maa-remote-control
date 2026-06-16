@@ -238,7 +238,7 @@ document.getElementById('send-code-btn').addEventListener('click', async () => {
 document.getElementById('toggle-reg').addEventListener('click', (e) => {
   e.preventDefault();
   isRegistering = !isRegistering;
-  document.getElementById('auth-title').textContent = isRegistering ? '注册' : '登录';
+  document.getElementById('login-subtitle').textContent = isRegistering ? '注册新账号' : '登录以管理你的设备';
   document.getElementById('login-submit').textContent = isRegistering ? '注册' : '登录';
   document.getElementById('reg-extra').style.display = isRegistering ? 'block' : 'none';
   document.getElementById('toggle-reg').textContent = isRegistering ? '已有账号？登录' : '注册新账号';
@@ -267,6 +267,7 @@ document.getElementById('login-submit').addEventListener('click', async () => {
     document.getElementById('login-submit').textContent = '登录';
     document.getElementById('reg-extra').style.display = 'none';
     document.getElementById('toggle-reg').textContent = '注册新账号';
+    document.getElementById('login-subtitle').textContent = '登录以管理你的设备';
     return;
   }
 
