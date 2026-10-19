@@ -2,6 +2,7 @@ const express = require('express');
 const deviceRegistry = require('../modules/device-registry');
 const taskQueue = require('../modules/task-queue');
 const taskResultHandler = require('../modules/task-result-handler');
+const settings = require('../modules/settings');
 
 const router = express.Router();
 // MAA sends screenshots as base64 which can be 10+ MB
@@ -10,6 +11,10 @@ router.use(express.json({ limit: '50mb' }));
 // POST /maa/getTask - MAA polls every 1 second
 router.post('/getTask', (req, res) => {
   try {
+    if (!settings.isServiceEnabled()) {
+      return res.json({ tasks: [] });
+    }
+
     const { user, device } = req.body;
     if (!user || !device) {
       console.log(`[${new Date().toLocaleTimeString()}] getTask 请求格式错误:`, req.body);

@@ -1,6 +1,7 @@
 const express = require('express');
 const deviceRegistry = require('../modules/device-registry');
 const taskQueue = require('../modules/task-queue');
+const settings = require('../modules/settings');
 const db = require('../db');
 
 const router = express.Router();
@@ -43,6 +44,30 @@ function buildStatus(accountId) {
   };
 }
 
+// ===== GLOBAL SETTINGS =====
+
+router.get('/settings', (req, res) => {
+  const acct = auth.getAccount(req);
+  res.json({
+    service_enabled: settings.isServiceEnabled(),
+    can_manage: !!(acct && acct.role === 'admin')
+  });
+});
+
+router.patch('/settings', (req, res) => {
+  const acct = auth.getAccount(req);
+  if (!acct || acct.role !== 'admin') {
+    return res.status(403).json({ error: '无权限' });
+  }
+
+  const enabled = req.body.service_enabled;
+  if (typeof enabled !== 'boolean') {
+    return res.status(400).json({ error: 'service_enabled must be a boolean' });
+  }
+
+  res.json({ service_enabled: settings.setServiceEnabled(enabled) });
+});
+
 // ===== DEVICES =====
 
 router.get('/devices', (req, res) => {
@@ -79,8 +104,11 @@ router.delete('/devices/:uuid', (req, res) => {
 // Aggregated payload for the dashboard, reducing three polling requests to one
 router.get('/overview', (req, res) => {
   const accountId = filterAccountId(req);
+  const acct = auth.getAccount(req);
   res.json({
     ...buildStatus(accountId),
+    service_enabled: settings.isServiceEnabled(),
+    can_manage: !!(acct && acct.role === 'admin'),
     devices: deviceRegistry.listDevices({ accountId }),
     results: taskQueue.listResults({ accountId, limit: 10 })
   });

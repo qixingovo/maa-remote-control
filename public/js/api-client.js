@@ -20,6 +20,10 @@ const api = {
   rotateMaaId() { return this.request('POST', '/api/auth/rotate-maa-id'); },
   changePhone(phone) { return this.request('POST', '/api/auth/change-phone', { phone }); },
 
+  // Global settings
+  getSettings() { return this.request('GET', '/api/settings'); },
+  updateSettings(data) { return this.request('PATCH', '/api/settings', data); },
+
   // Devices
   getDevices(onlineOnly) {
     const q = onlineOnly ? '?online=true' : '';

@@ -2,9 +2,13 @@
 const Dashboard = {
   interval: null,
   refreshing: false,
+  toggling: false,
 
   init() {
     document.getElementById('qd-send').addEventListener('click', () => this.quickDispatch());
+    document.getElementById('master-switch-toggle').addEventListener('change', (event) => {
+      this.toggleService(event.target.checked);
+    });
     this.refresh();
   },
 
@@ -13,6 +17,7 @@ const Dashboard = {
     this.refreshing = true;
     try {
       const overview = await api.getOverview();
+      this.renderMasterSwitch(overview.service_enabled, overview.can_manage);
       this.renderStats(overview);
       this.renderActivity(overview.results || []);
       this.renderDeviceSelect(overview.devices || []);
@@ -28,6 +33,32 @@ const Dashboard = {
       `<option value="${d.device_uuid}" ${d.device_uuid === current ? 'selected' : ''}>${d.name || APP.truncate(d.device_uuid)}</option>`
     ).join('');
     if (!sel.innerHTML) sel.innerHTML = '<option value="">-- 无设备 --</option>';
+  },
+
+  renderMasterSwitch(enabled, canManage) {
+    const toggle = document.getElementById('master-switch-toggle');
+    const desc = document.getElementById('master-switch-desc');
+    toggle.disabled = !canManage;
+    toggle.checked = !!enabled;
+    desc.textContent = enabled
+      ? '运行中：设备可接收并执行远程任务'
+      : '已停止：设备不会收到新任务';
+  },
+
+  async toggleService(enabled) {
+    if (this.toggling) return;
+    const toggle = document.getElementById('master-switch-toggle');
+    this.toggling = true;
+    try {
+      const result = await api.updateSettings({ service_enabled: enabled });
+      this.renderMasterSwitch(result.service_enabled, true);
+      APP.toast(result.service_enabled ? '总控已开启' : '总控已停止');
+    } catch {
+      toggle.checked = !enabled;
+      APP.toast('切换失败');
+    } finally {
+      this.toggling = false;
+    }
   },
 
   renderStats(s) {

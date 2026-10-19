@@ -64,3 +64,8 @@ CREATE TABLE IF NOT EXISTS task_results (
     created_at      TEXT    NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_results_task ON task_results(task_uuid);
+
+CREATE TABLE IF NOT EXISTS settings (
+    key             TEXT    PRIMARY KEY,
+    value           TEXT    NOT NULL
+);

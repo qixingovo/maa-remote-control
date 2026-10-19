@@ -238,6 +238,69 @@ button.sm { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius:
   flex: 1;
 }
 
+/* Master switch */
+.master-switch-panel {
+  border: 1px solid var(--border);
+}
+.master-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.master-switch-info {
+  min-width: 0;
+}
+.master-switch-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.master-switch-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.master-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 30px;
+  flex-shrink: 0;
+}
+.master-switch input {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+.master-switch-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  background: #9aa0a6;
+  transition: opacity 0.2s, background 0.2s;
+}
+.master-switch-slider::before {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.master-switch input:checked + .master-switch-slider {
+  background: var(--success);
+}
+.master-switch input:checked + .master-switch-slider::before {
+  transform: translateX(22px);
+}
+.master-switch input:disabled + .master-switch-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Accordion */
 .accordion {
   border: 1px solid var(--border);
