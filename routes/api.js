@@ -17,6 +17,32 @@ function filterAccountId(req) {
   return acct.id;
 }
 
+function buildStatus(accountId) {
+  let whereTasks = "1=1";
+  const params = [];
+  if (accountId !== null) {
+    whereTasks = "t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)";
+    params.push(accountId);
+  }
+
+  const pendingTasks = db.prepare(
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'pending'`
+  ).get(...params).count;
+  const completedToday = db.prepare(
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'completed' AND date(t.completed_at) = date('now')`
+  ).get(...params).count;
+  const failedToday = db.prepare(
+    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'failed' AND date(t.completed_at) = date('now')`
+  ).get(...params).count;
+
+  return {
+    onlineDevices: deviceRegistry.listDevices({ onlineOnly: true, accountId }).length,
+    pendingTasks,
+    completedToday,
+    failedToday
+  };
+}
+
 // ===== DEVICES =====
 
 router.get('/devices', (req, res) => {
@@ -48,6 +74,16 @@ router.delete('/devices/:uuid', (req, res) => {
   const deleted = deviceRegistry.deleteDevice(req.params.uuid);
   if (!deleted) return res.status(404).json({ error: 'Device not found' });
   res.json({ deleted: true });
+});
+
+// Aggregated payload for the dashboard, reducing three polling requests to one
+router.get('/overview', (req, res) => {
+  const accountId = filterAccountId(req);
+  res.json({
+    ...buildStatus(accountId),
+    devices: deviceRegistry.listDevices({ accountId }),
+    results: taskQueue.listResults({ accountId, limit: 10 })
+  });
 });
 
 // ===== TASKS =====
@@ -124,32 +160,7 @@ router.get('/results/:taskUuid', (req, res) => {
 // ===== STATUS =====
 
 router.get('/status', (req, res) => {
-  const accountId = filterAccountId(req);
-  const onlineDevices = deviceRegistry.listDevices({ onlineOnly: true, accountId });
-  let whereTasks = "1=1";
-  let whereDevices = "1=1";
-  const params = [];
-  if (accountId !== null) {
-    whereTasks = "t.device_uuid IN (SELECT device_uuid FROM devices WHERE account_id = ?)";
-    whereDevices = "account_id = ?";
-    params.push(accountId);
-  }
-  const pendingTasks = db.prepare(
-    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'pending'`
-  ).get(...params).count;
-  const completedToday = db.prepare(
-    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'completed' AND date(t.completed_at) = date('now')`
-  ).get(...params).count;
-  const failedToday = db.prepare(
-    `SELECT COUNT(*) as count FROM tasks t WHERE ${whereTasks} AND t.status = 'failed' AND date(t.completed_at) = date('now')`
-  ).get(...params).count;
-
-  res.json({
-    onlineDevices: onlineDevices.length,
-    pendingTasks,
-    completedToday,
-    failedToday
-  });
+  res.json(buildStatus(filterAccountId(req)));
 });
 
 module.exports = router;

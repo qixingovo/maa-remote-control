@@ -1,6 +1,7 @@
 // Dashboard tab
 const Dashboard = {
   interval: null,
+  refreshing: false,
 
   init() {
     document.getElementById('qd-send').addEventListener('click', () => this.quickDispatch());
@@ -8,20 +9,25 @@ const Dashboard = {
   },
 
   async refresh() {
+    if (this.refreshing || document.hidden) return;
+    this.refreshing = true;
     try {
-      const status = await api.getStatus();
-      this.renderStats(status);
-      const results = await api.getResults({ limit: 10 });
-      this.renderActivity(results.results || []);
-      // Populate quick dispatch device dropdown
-      const devices = await api.getDevices();
-      const sel = document.getElementById('qd-device');
-      const current = sel.value;
-      sel.innerHTML = (devices.devices || []).map(d =>
-        `<option value="${d.device_uuid}" ${d.device_uuid === current ? 'selected' : ''}>${d.name || APP.truncate(d.device_uuid)}</option>`
-      ).join('');
-      if (!sel.innerHTML) sel.innerHTML = '<option value="">-- 无设备 --</option>';
-    } catch { /* server not ready */ }
+      const overview = await api.getOverview();
+      this.renderStats(overview);
+      this.renderActivity(overview.results || []);
+      this.renderDeviceSelect(overview.devices || []);
+    } catch { /* server not ready */ } finally {
+      this.refreshing = false;
+    }
+  },
+
+  renderDeviceSelect(devices) {
+    const sel = document.getElementById('qd-device');
+    const current = sel.value;
+    sel.innerHTML = devices.map(d =>
+      `<option value="${d.device_uuid}" ${d.device_uuid === current ? 'selected' : ''}>${d.name || APP.truncate(d.device_uuid)}</option>`
+    ).join('');
+    if (!sel.innerHTML) sel.innerHTML = '<option value="">-- 无设备 --</option>';
   },
 
   renderStats(s) {
@@ -74,7 +80,7 @@ const Dashboard = {
   }
 };
 
-// Auto-refresh dashboard every 5 seconds
+// Auto-refresh dashboard every 15 seconds
 setInterval(() => {
-  if (APP.currentTab === 'dashboard') Dashboard.refresh();
-}, 5000);
+  if (APP.currentTab === 'dashboard' && !document.hidden) Dashboard.refresh();
+}, 15000);

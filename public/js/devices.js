@@ -148,5 +148,5 @@ const Devices = {
 
 // Auto-refresh devices when tab active
 setInterval(() => {
-  if (APP.currentTab === 'devices') Devices.refresh();
-}, 5000);
+  if (APP.currentTab === 'devices' && !document.hidden) Devices.refresh();
+}, 15000);

@@ -46,5 +46,6 @@ const api = {
   },
 
   // Status
+  getOverview() { return this.request('GET', '/api/overview'); },
   getStatus() { return this.request('GET', '/api/status'); }
 };

@@ -30,8 +30,26 @@ app.use('/api', apiRoutes);
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-// Serve screenshot files
-app.use('/api/screenshots', express.static(config.screenshotDir));
+// Serve immutable screenshot files. Filenames are UUIDs, so they can be cached safely.
+app.get('/api/screenshots/:filename', (req, res, next) => {
+  const { filename } = req.params;
+  if (!/^[A-Za-z0-9-]+\.png$/.test(filename)) {
+    return res.status(404).end();
+  }
+
+  const root = path.resolve(config.screenshotDir);
+  const filePath = path.resolve(root, filename);
+  if (!filePath.startsWith(root + path.sep)) {
+    return res.status(404).end();
+  }
+
+  res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+  res.sendFile(filePath, (err) => {
+    if (!err) return;
+    if (err.code === 'ENOENT') return res.status(404).end();
+    next(err);
+  });
+});
 
 // Serve web UI
 app.use(express.static(path.join(__dirname, 'public')));

@@ -2,6 +2,9 @@
 const TaskQueue = {
   currentFilter: { device: '', status: '' },
   currentSub: 'exec',
+  loadingDevices: false,
+  devicesLoadedAt: 0,
+  loadingTasks: false,
 
   init() {
     // Sub-tabs
@@ -39,27 +42,42 @@ const TaskQueue = {
     await this.loadTasks();
   },
 
-  async loadDevices() {
-    const data = await api.getDevices();
-    const devices = data.devices || [];
-    const opts = devices.map(d =>
-      `<option value="${d.device_uuid}">${d.name || APP.truncate(d.device_uuid)}</option>`
-    ).join('');
-    const el = document.getElementById('task-device');
-    if (el) el.innerHTML = opts || '<option value="">-- 无设备 --</option>';
-    const fl = document.getElementById('filter-device');
-    if (fl) fl.innerHTML = '<option value="">全部设备</option>' + opts;
-    const ls = document.getElementById('ls-device');
-    if (ls) ls.innerHTML = opts || '<option value="">-- 无设备 --</option>';
+  async loadDevices(force = false) {
+    if (this.loadingDevices) return;
+    if (!force && Date.now() - this.devicesLoadedAt < 60000) return;
+
+    this.loadingDevices = true;
+    try {
+      const data = await api.getDevices();
+      const devices = data.devices || [];
+      const opts = devices.map(d =>
+        `<option value="${d.device_uuid}">${d.name || APP.truncate(d.device_uuid)}</option>`
+      ).join('');
+      const el = document.getElementById('task-device');
+      if (el) el.innerHTML = opts || '<option value="">-- 无设备 --</option>';
+      const fl = document.getElementById('filter-device');
+      if (fl) fl.innerHTML = '<option value="">全部设备</option>' + opts;
+      const ls = document.getElementById('ls-device');
+      if (ls) ls.innerHTML = opts || '<option value="">-- 无设备 --</option>';
+      this.devicesLoadedAt = Date.now();
+    } finally {
+      this.loadingDevices = false;
+    }
   },
 
   async loadTasks() {
-    const { device, status } = this.currentFilter;
-    const params = { limit: 100 };
-    if (device) params.device = device;
-    if (status) params.status = status;
-    const data = await api.getTasks(params);
-    this.renderTable(data.tasks || []);
+    if (this.loadingTasks || document.hidden) return;
+    this.loadingTasks = true;
+    try {
+      const { device, status } = this.currentFilter;
+      const params = { limit: 100 };
+      if (device) params.device = device;
+      if (status) params.status = status;
+      const data = await api.getTasks(params);
+      this.renderTable(data.tasks || []);
+    } finally {
+      this.loadingTasks = false;
+    }
   },
 
   renderTable(tasks) {
@@ -167,7 +185,7 @@ const TaskQueue = {
   }
 };
 
-// Auto-refresh
+// Auto-refresh task list every 10 seconds; device dropdowns refresh at most once per minute
 setInterval(() => {
-  if (APP.currentTab === 'tasks') TaskQueue.refresh();
-}, 5000);
+  if (APP.currentTab === 'tasks' && !document.hidden) TaskQueue.refresh();
+}, 10000);

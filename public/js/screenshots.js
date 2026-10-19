@@ -1,21 +1,28 @@
 // Screenshots tab
 const Screenshots = {
   selectedShots: new Set(),
+  loadingDevices: false,
+  devicesLoadedAt: 0,
+  loadingResults: false,
 
   init() {
     document.getElementById('shot-delete-selected').addEventListener('click', () => this.deleteSelected());
-    document.getElementById('shot-device-filter').addEventListener('change', () => this.refresh());
+    document.getElementById('shot-device-filter').addEventListener('change', () => this.loadResults());
   },
 
   async refresh() {
     try {
-      const device = document.getElementById('shot-device-filter').value;
-      const params = { limit: 50 };
-      if (device) params.device = device;
-      const data = await api.getResults(params);
-      const results = (data.results || []).filter(r => r.payload_type === 'screenshot');
-      this.renderGrid(results);
-      // Populate device filter
+      await this.loadDevices();
+      await this.loadResults();
+    } catch { /* */ }
+  },
+
+  async loadDevices(force = false) {
+    if (this.loadingDevices) return;
+    if (!force && Date.now() - this.devicesLoadedAt < 60000) return;
+
+    this.loadingDevices = true;
+    try {
       const devices = await api.getDevices();
       const sel = document.getElementById('shot-device-filter');
       const current = sel.value;
@@ -23,7 +30,25 @@ const Screenshots = {
         (devices.devices || []).map(d =>
           `<option value="${d.device_uuid}" ${d.device_uuid === current ? 'selected' : ''}>${d.name || APP.truncate(d.device_uuid)}</option>`
         ).join('');
-    } catch { /* */ }
+      this.devicesLoadedAt = Date.now();
+    } finally {
+      this.loadingDevices = false;
+    }
+  },
+
+  async loadResults() {
+    if (this.loadingResults || document.hidden) return;
+    this.loadingResults = true;
+    try {
+      const device = document.getElementById('shot-device-filter').value;
+      const params = { limit: 50 };
+      if (device) params.device = device;
+      const data = await api.getResults(params);
+      const results = (data.results || []).filter(r => r.payload_type === 'screenshot');
+      this.renderGrid(results);
+    } finally {
+      this.loadingResults = false;
+    }
   },
 
   renderGrid(results) {
@@ -109,7 +134,7 @@ const Screenshots = {
   }
 };
 
-// Auto-refresh screenshots when tab active
+// Auto-refresh screenshots every 30 seconds; device filter refreshes at most once per minute
 setInterval(() => {
-  if (APP.currentTab === 'screenshots') Screenshots.refresh();
-}, 10000);
+  if (APP.currentTab === 'screenshots' && !document.hidden) Screenshots.refresh();
+}, 30000);
